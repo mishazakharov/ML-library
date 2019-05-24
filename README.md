@@ -3,7 +3,7 @@
 
 
 <h1>What is that?</h1>
-This is my machine learning library. 
+This is my attempt to create my own machine learning library **written in Python**. Now it is in the earliest stage, much of what is planned has not yet been realized. *I am just tryin to learn here!*
 
 
 <h2>Objective of the "project"</h2>
