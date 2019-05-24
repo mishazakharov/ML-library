@@ -1,8 +1,11 @@
-# ML-library
+# Machine Learning Library
 
+
+<h1>What is that?</h1>
 This is my machine learning library. 
 
-<h1>Objective of the "project"</h1>
+
+<h2>Objective of the "project"</h2>
 
 The main idea is to manually implement the algorithms of classical machine learning, i.e. supervised learning and unsupervised learning , in the hope that it will lead me to a deeper understanding of the concepts of machine learning.
 
