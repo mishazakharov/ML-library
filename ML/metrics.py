@@ -52,10 +52,41 @@ def accuracy_score(y,y_pred):
 
 
 def precision_score(y,y_pred):
-	''' Полнота '''
-	raise NotImplementedError
+	''' Точность = tp/tp+fp,
+	где tp - true positive, fp - false positive
+	Например, целевое значение 0, определенное классификатором как 1 - 
+	-  false positive, а целевое значение 1, 
+	определенное как 1 - true positive.
+	'''
+	true_positive = 0
+	false_positive = 0
+	for real,predicted in zip(y,y_pred):
+		if int(real) == 1 and int(predicted) == 1:
+			true_positive += 1
+		if int(real) == 0 and int(predicted) == 1:
+			false_positive += 1
+	# Считаем полноту
+	return true_positive/(true_positive + false_positive)
+
+
+def recall_score(y,y_pred):
+	''' Полнота = tp/(tp+fn), где fn - false negative
+	'''
+	true_positive = 0
+	false_negative = 0
+	for real,predicted in zip(y,y_pred):
+		if int(real) == 1 and int(predicted) == 1:
+			true_positive += 1
+		if int(real) == 1 and int(predicted) == 0:
+			false_negative += 1
+	# Считаем полноту 
+	return true_positive/(true_positive + false_negative)
 
 
 def f1_score(y,y_pred):
 	''' F1-мера '''
-	raise NotImplementedError
+	precision = precision_score(y,y_pred)
+	recall = recall_score(y,y_pred)
+	# Считаем F1-меру просто по формуле
+	return 2 * (precision * recall)/(precision + recall)
+	

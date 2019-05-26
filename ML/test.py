@@ -1,5 +1,5 @@
 from main import GradientBoostingClassifier
-from metrics import accuracy_score
+from metrics import f1_score
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -21,6 +21,6 @@ with warnings.catch_warnings():
     model =  GradientBoostingClassifier()
     model.fit(X_train,y_train)
     prediction = model.predict(X_test)
-    metrics = accuracy_score(y_test,prediction)
+    metrics = f1_score(y_test,prediction)
     print(metrics)
 
