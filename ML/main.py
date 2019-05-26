@@ -594,6 +594,7 @@ class BaggingClassifier():
 
 
 class CrossEntropy():
+	''' Класс для функции кросс-энтропии. '''
 	def __init__(self):
 		pass
 
@@ -603,11 +604,14 @@ class CrossEntropy():
 		return - y*np.log(p) - (1-y)*np.log(1-p)
 
 	def gradient(self,y,p):
-		# Не делим на 0
+		# Не делим на 0(Избавляемся от крайних точек отрекза [0,1])
 		p = np.clip(p,1e-15,1-1e-15)
+		p,y = p.reshape(-1,1),y.reshape(-1,1)
+
 		return -(y/p) + (1-y) / (1-p)
 
 class MSE():
+	''' Класс среднеквадратичной ошибки. '''
 	def __init__(self):
 		pass
 
@@ -628,12 +632,20 @@ class GradientBoosting():
 		self.min_impurity = min_impurity
 		self.max_depth = max_depth
 		self.regression = regression
+		self.trees = []
 		self.loss = MSE()
+		# Иинициализируем деревья для классификации
 		if not self.regression:
 			self.loss = CrossEntropy()
-
-		# Инициализируем деревья
-		self.trees = []
+			'''
+			for _ in range(self.n_estimators):
+				tree = sklearn.tree.DecisionTreeClassifier(
+								min_samples_split=self.min_samples_split,
+								min_impurity_split=self.min_impurity,
+								max_depth=self.max_depth)
+				self.trees.append(tree)
+			'''
+		# Инициализируем деревья для регрессии
 		for _ in range(self.n_estimators):
 			tree = sklearn.tree.DecisionTreeRegressor(
 								min_samples_split=self.min_samples_split,
@@ -660,11 +672,11 @@ class GradientBoosting():
 			update = tree.predict(X)
 			update = (self.learning_rate*update)
 			y_pred = -update if not y_pred.any() else y_pred - update
-
+		# Случай для классификации
 		if not self.regression:
-			# Случай для классификации
-			y_pred = np.exp(y_pred)/np.expand_dims(np.sum(np.exp(y_pred),axis=1),axis=1)
-			y_pred = np.argmax(y_pred,axis=1)
+			y_pred = np.exp(y_pred)/(1+np.exp(y_pred))
+			# Округляем вероятности(threshold = 0.5)
+			y_pred = np.round(y_pred)
 
 		return y_pred
 
@@ -699,6 +711,9 @@ class GradientBoostingRegressor(GradientBoosting):
 						min_impurity=min_impurity,
 						max_depth=max_depth,
 						regression=True)
+
+
+
 
 			
 
