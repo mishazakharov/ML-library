@@ -3,6 +3,8 @@ from random import randrange
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 import sklearn
+from metrics import accuracy_score
+import random as rd
 
 
 class LinearRegression():
@@ -714,6 +716,112 @@ class GradientBoostingRegressor(GradientBoosting):
 
 
 
+class GridSearchCV():
+	''' '''
+	def __init__(self,model,param):
+		'''
+		self.model = model
+		self.param = param
+		self.best_estimator_ = 0
+		self.best_params = {}
+
+	def fit(self,X,y):
+		for key in self.param.keys():
+			for value in self.param[key]:
+				self.model.fit(key=value)
+				prediction = self.model.predict(X)
+				metrics = accuracy_score(y,prediction)
+				if metrics > minimal:
+					minimal = metrics
+					self.best_params[key] = value
+		self.best_estimator = self.model(self.be=self.best_params.values()[0])
+		'''
+		raise NotImplementedError
+
+
+
+class KMeans():
+	''' '''
+	def __init__(self,clusters,iterations=100):
+		self.clusters = clusters
+		self.iterations = iterations
+		self.first = 0
+		self.output = 0
+
+
+	def fit(self,X):
+		self.first = X
+		m=X.shape[0] #number of training examples
+		n=X.shape[1] #number of features. Here n=2
+		n_iter=100
+		K = self.clusters
+
+		Centroids=np.array([]).reshape(n,0) 
+		for i in range(K):
+			rand=rd.randint(0,m-1)
+			Centroids=np.c_[Centroids,X[rand]]
+
+		for i in range(n_iter):
+			#step 2.
+			EuclidianDistance=np.array([]).reshape(m,0)
+			for k in range(K):
+				tempDist=np.sum((X-Centroids[:,k])**2,axis=1)
+				EuclidianDistance=np.c_[EuclidianDistance,tempDist]
+
+			C=np.argmin(EuclidianDistance,axis=1)+1
+		    #step 2.b
+			Y = {}
+			for k in range(K):
+				Y[k+1]=np.array([]).reshape(2,0)
+			for i in range(m):
+				Y[C[i]]=np.c_[Y[C[i]],X[i]]
+			for k in range(K):
+				Y[k+1]=Y[k+1].T
+			for k in range(K):
+				Centroids[:,k]=np.mean(Y[k+1],axis=0)
+		self.output = Y
+
+	def fit_predict(self,X):
+		''' Осуществляет fit, predict и выводит распределение по кластерам'''
+		self.fit(X)
+		return self.output
+
+	def predict(self,X_new):
+		''' Вычисляет, к какому кластеру принадлежит новая точка
+		Пока что работает только для предикта на одной точке!(НАДО ИСПРАВИТЬ)
+		'''
+		new = np.vstack((self.first,X_new))
+		self.fit(new)
+		cluster_appended = 0
+		for key in self.output.keys():
+			for value in self.output[key]:
+				if value.all() == X_new.all():
+					return key
+					break
+
+		# Возвращает номер кластера, к которому была определена новая точка
+		return None
+
+
+
+
+
+
+
+
+	    
+
+
+
+
+
+
+
+
+
+
+
+ 
 
 			
 
