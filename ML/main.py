@@ -792,7 +792,6 @@ class KMeans():
 
 		ПОЛНОСТЬЮ НЕ РАБОТАЕТ, ВОЗВРАЩАЕТ НЕПРАВИЛЬНЫЕ КЛАССЫ!!!!!!
 		РАБОТАЕТ ДАЖЕ НЕПРАВИЛЬНЫМ ОБРАЗОМ ТОЛЬКО ДЛЯ 1 НОВОЙ ТОЧКИ!!!!!
-		'''
 		new = np.vstack((self.first,X_new))
 		self.fit(new)
 		cluster_appended = 0
@@ -804,6 +803,8 @@ class KMeans():
 
 		# Возвращает номер кластера, к которому была определена новая точка
 		return None
+		'''
+		raise NotImplementedError
 
 
 
