@@ -5,7 +5,17 @@ from sklearn.model_selection import train_test_split
 import sklearn
 from metrics import accuracy_score
 import random as rd
+from math import sqrt
 
+
+
+def check_data_format(X):
+	''' Проверяет в каком формате данные подаются алгоритму. '''
+	nparray = lambda x: isinstance(x,np.ndarray)
+	if not nparray(X):
+		X = X.values
+
+	return X
 
 class LinearRegression():
 	''' Класс линейной регрессии. '''
@@ -47,6 +57,7 @@ class LinearRegression():
 		return theta
 
 	def fit(self,X,y):
+		X,y = check_data_format(X),check_data_format(y)
 		# Матрица обучающей выборки n+1 x m размерная
 		x_i = X.T
 		# Добавление x0 = 1
@@ -57,6 +68,7 @@ class LinearRegression():
 		self.theta = self.gradient_runner(inital_theta,vector_x,vector_y)
 
 	def predict(self,x):
+		x = check_data_format(x)
 		# Создание списка, хранящего результаты
 		predictions = []
 		# Определние размера полученного массива
@@ -122,6 +134,7 @@ class LogisticRegression():
 		return theta
 
 	def fit(self,X,y):
+		X,y = check_data_format(X),check_data_format(y)
 		x_i = X.T
 		vektor_x = np.insert(x_i,0,[1],axis=0)
 		vektor_y = y
@@ -129,6 +142,7 @@ class LogisticRegression():
 		self.theta = self.gradient_runner(initial_theta,vektor_x,vektor_y)
 
 	def predict(self,x):
+		x = check_data_format(x)
 		predictions = []
 		m = x.shape[0]
 		for i in range(0,m):
@@ -363,7 +377,7 @@ class RandomForest():
 
 	def fit(self,X,y):
 		''' Построение случайного леса. '''
-		
+		X,y = check_data_format(X),check_data_format(y)
 		for i in range(self.n_estimators):
 			# Подготовка данных (Бэггинг)
 			new_data = np.array(self.subsample(X,y,0.5))
@@ -384,6 +398,7 @@ class RandomForest():
 			суммируем предсказания всех деревьев и делим вектор на 
 			их количество и получаем предсказание всего ансамбля!!!! 
 		'''
+		predict_on_X = check_data_format(predict_on_X)
 		conclusion = np.zeros((predict_on_X.shape[0],1))
 		tree = DecisionTree()
 		for b in self.trees:
@@ -417,6 +432,7 @@ class AdaBoostClassifier():
 		self.base_estimator = base_estimator
 
 	def fit(self,X,Y):
+		X,Y = check_data_format(X),check_data_format(Y)
 		# Список, хранящий классификаторы
 		self.models = []
 		# Альфа - это вес каждого классификатора
@@ -441,6 +457,7 @@ class AdaBoostClassifier():
 			self.alphas.append(alpha)
 
 	def predict(self,X):
+		X = check_data_format(X)
 		''' Класс предсказаний. '''
 		N = len(X)
 		FX = np.zeros(N)
@@ -467,7 +484,7 @@ class StackingRegression():
 
 
 	def fit(self,X,y):
-
+		X,y = check_data_format(X),check_data_format(y)
 		train_X,valid_X,train_y,valid_y = train_test_split(X,y,test_size=0.5)
 		for model in self.list_of_models:
 			# Предсказания для набора валидации
@@ -487,7 +504,7 @@ class StackingRegression():
 		Если использовать sklearn.linear_model.LinearRegression,
 		то среднеквадратичная ошибка предсказаний уменьшается в разы!!!!
 		'''
-
+		X = check_data_format(X)
 		# Предсказания на испытательном наборе!
 		for model in self.list_of_models:
 			model.fit(self.train_X,self.train_y)
@@ -574,6 +591,7 @@ class BaggingClassifier():
 		return sample_X,sample_y
 
 	def fit(self,X,y):
+		X,y = check_data_format(X),check_data_format(y)
 		# Базовая модель - дерево принятия решений
 		if self.base_estimator == '':
 			self.base_estimator = DecisionTreeClassifier()
@@ -586,6 +604,7 @@ class BaggingClassifier():
 			self.list_of_trained_estimators.append(b)
 
 	def predict(self,X):
+		X = check_data_format(X)
 		predictions = np.zeros((X.shape[0],1))
 		for model in self.list_of_trained_estimators:
 			predictions += model.predict(X).reshape(-1,1)
@@ -656,6 +675,7 @@ class GradientBoosting():
 			self.trees.append(tree)
 
 	def fit(self,X,y):
+		X,y = check_data_format(X),check_data_format(y)
 		# Изначально берется среднее значение
 		y_pred = np.full(np.shape(y),np.mean(y,axis=0)) 
 		for tree in self.trees:
@@ -668,6 +688,7 @@ class GradientBoosting():
 			y_pred -= self.learning_rate*update
 
 	def predict(self,X):
+		X = check_data_format(X)
 		# Способ формирования предиктов у градиентного бустинга
 		y_pred = np.array([])
 		for tree in self.trees:
@@ -750,6 +771,7 @@ class KMeans():
 
 
 	def fit(self,X):
+		X = check_data_format(X)
 		self.first = X
 		m=X.shape[0] #number of training examples
 		n=X.shape[1] #number of features. Here n=2
@@ -783,6 +805,7 @@ class KMeans():
 
 	def fit_predict(self,X):
 		''' Осуществляет fit, predict и выводит распределение по кластерам'''
+		X = check_data_format(X)
 		self.fit(X)
 		return self.output
 
@@ -808,12 +831,51 @@ class KMeans():
 
 
 
+class KNeighborsClassifier(object):
+    ''' KNN Classifier SIMPLE '''
+    def __init__(self,k=15):
+        # k - number of neighbors to track!
+        self.k = k
+
+    def euclidian_distance(self,x1,x2):
+        ''' Calculate ED between X and x '''
+        summation = 0
+        for i in range(len(x1)):
+           summation += (x1[i] - x2[i])**2
+        # Returns euclidian distance between two vectors.
+        return sqrt(summation)
+           
+
+    def _vote(self,classes):
+        ''' Class of voting. '''
+        counts = np.bincount(classes.astype('int'))
+        return counts.argmax()
+
+    def predict(self,X_test,X_train,y_train):
+        #Transforming data if needed!
+        X_train = check_data_format(X_train)
+        y_train = check_data_format(y_train)
+        X_test = check_data_format(X_test)
+
+        y_pred = np.empty(X_test.shape[0])
+        # Determine the class
+        for i,sample in enumerate(X_test):
+            # sorting by euclidain_distance and showing only first self.k of them!
+            neighbors = (np.argsort([self.euclidian_distance(sample,
+                                        x) for x in X_train])[:self.k])
+            # Extracting classes of k neighbors
+            classes = np.array([y_train[i] for i in y_train])
+            # ...
+            y_pred[i] = self._vote(classes)
+
+        return y_pred
 
 
 
-
-
-
+class NaiveBayesClassifier():
+    ''' '''
+    def __init__(self):
+        raise NotImplementedError
 	    
 
 
