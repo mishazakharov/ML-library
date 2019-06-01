@@ -89,4 +89,27 @@ def f1_score(y,y_pred):
 	recall = recall_score(y,y_pred)
 	# Считаем F1-меру просто по формуле
 	return 2 * (precision * recall)/(precision + recall)
-	
+
+
+def confusion_matrix(y,y_pred):
+    ''' Confusion matrix - works only for binary classification for now! '''
+    tp = 0
+    fp = 0
+    tn = 0
+    fn = 0
+    for real,predicted in zip(y,y_pred):
+        if int(real) == 1 and int(predicted) == 1:
+            tp += 1
+        if int(real) == 0 and int(predicted) == 1:
+            fp += 1
+        if int(real) == 1 and int(predicted) == 0:
+            fn += 1
+        if int(real) == 0 and int(predicted) == 0:
+            tn += 1
+    # Forming CM for binary classification!
+    confusion_matrix = np.array([[tn,fp],[fn,tp]])
+    # returning 
+    return confusion_matrix
+
+
+
