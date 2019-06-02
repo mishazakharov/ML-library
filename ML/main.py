@@ -879,7 +879,59 @@ class NaiveBayesClassifier():
 	    
 
 
+class MultiLayerPerceptron(object):
+    ''' Creates a simple neural net with 1 hidden layers '''
+    def __init__(self,x,y,neurons_in_layer=4):
+        self.input = x
+        self.y = y
+        self.neurons_in_layer = neurons_in_layer
+        # Weights of 1st layer
+        self.weights1 = np.random.rand(self.input.shape[1],
+                                            self.neurons_in_layer)
+        # Weights of 2nd layer
+        self.weights2 = np.random.rand(self.neurons_in_layer,1)
+        self.output = np.zeros(y.shape)
 
+    def sigmoid(self,x):
+        return 1/(1 + np.exp(-x))
+
+    def sigmoid_derivative(self,x):
+        return x * (1.0 - x)
+
+    def feedforward(self):
+        ''' Feedforward propogation '''
+        # First layer
+        self.layer1 = self.sigmoid(np.dot(self.input,self.weights1))
+        # Second layer
+        self.output = self.sigmoid(np.dot(self.layer1,self.weights2))
+
+    def backpropogation(self):
+        ''' Backpropogation in NN '''
+
+        # Updating weights2 
+        error = self.y - self.output
+        learning_rate = 2
+        d_weights2 = np.dot(self.layer1.T,(learning_rate*
+                            error*self.sigmoid_derivative(self.output)))
+        # Updating weights1 
+        error1 = np.dot(error,self.weights2.T)
+        d_weights1 = np.dot(self.input.T,(learning_rate*
+                                error1*self.sigmoid_derivative(self.layer1)))
+        # Updating weights
+        self.weights1 -= d_weights1
+        self.weights2 -= d_weights2
+
+    def fit(self,number_of_iterations):
+        ''' Training our NN '''
+        for i in range(number_of_iterations+1):
+            self.feedforward()
+            self.backpropogation()
+        
+    def predict(self,new_input):
+        ''' Predicting new values '''
+        l1 = self.sigmoid(np.dot(new_input,self.weights1))
+        output = self.sigmoid(np.dot(l1,self.weights2))
+        return np.round(output)
 
 
 
