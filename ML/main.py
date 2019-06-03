@@ -880,7 +880,9 @@ class NaiveBayesClassifier():
 
 
 class MultiLayerPerceptron(object):
-    ''' Creates a simple neural net with 1 hidden layers '''
+    ''' Creates a simple neural net with 1 hidden layers 
+    Not working properly returns only 1s
+    '''
     def __init__(self,x,y,neurons_in_layer=4):
         self.input = x
         self.y = y
@@ -935,22 +937,39 @@ class MultiLayerPerceptron(object):
 
 
 
+class Perceptron(object):
+    ''' A single perceptron(neuron!) 
+    Not working properly returns all 1s
+    '''
+    def __init__(self,X_train,y_train):
+        np.random.seed(1)
+        self.X_train = X_train
+        self.y_train = y_train
+        # 1 neuron with 3 inputs and 1 output
+        self.synaptic_weights = 2 * np.random.random((self.X_train.shape[1],1)) - 1
 
+    def _sigmoid(self,x):
+        ''' sigmoid function of x '''
+        return 1/(1 + np.exp(-x))
 
+    def _sigmoid_derivative(self,x):
+        ''' derivative of sigmoid in x '''
+        return x * (1-x)
 
+    def predict(self,X_test):
+        ''' predicting on X_test '''
+        return np.round(self._sigmoid(np.dot(X_test,self.synaptic_weights)))
 
+    def fit(self,number_of_iterations=1000):
+        ''' training one neuron '''
+        for iteration in range(number_of_iterations):
+            # Making a prediction on X_train
+            output = self.predict(self.X_train)
+            # Computing an error(the difference between output and labels)
+            error = self.y_train - output
+            # The adjustment
+            adjustment = np.dot(self.X_train.T,(error*self._sigmoid_derivative(output)))
+            # Adjusting
+            self.synaptic_weights += adjustment
 
- 
-
-			
-
-
-
-
-
-		
-
-
-
-
-
+    
