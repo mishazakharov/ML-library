@@ -941,12 +941,15 @@ class Perceptron(object):
     ''' A single perceptron(neuron!) 
     Not working properly returns all 1s
     '''
-    def __init__(self,X_train,y_train):
-        np.random.seed(1)
+    def __init__(self,X_train,y_train,learning_rate=0.001,reg=0.01):
+        # a way of controlling a randomness of our numbers/
         self.X_train = X_train
         self.y_train = y_train
-        # 1 neuron with 3 inputs and 1 output
-        self.synaptic_weights = 2 * np.random.random((self.X_train.shape[1],1)) - 1
+        # Xavier initializtion
+        init = sqrt(2/(self.X_train.shape[1] + 1))
+        self.synaptic_weights = np.random.uniform(-init,init,(self.X_train.shape[1],1))
+        self.learning_rate = learning_rate
+        self.reg = reg
 
     def _sigmoid(self,x):
         ''' sigmoid function of x '''
@@ -960,9 +963,10 @@ class Perceptron(object):
         ''' predicting on X_test '''
         return np.round(self._sigmoid(np.dot(X_test,self.synaptic_weights)))
 
-    def fit(self,number_of_iterations=1000):
+    def fit(self,number_of_iterations=20000):
         ''' training one neuron '''
         for iteration in range(number_of_iterations):
+            linear_output = np.dot(self.X_train,self.synaptic_weights)
             # Making a prediction on X_train
             output = self.predict(self.X_train)
             # Computing an error(the difference between output and labels)
@@ -970,6 +974,48 @@ class Perceptron(object):
             # The adjustment
             adjustment = np.dot(self.X_train.T,(error*self._sigmoid_derivative(output)))
             # Adjusting
-            self.synaptic_weights += adjustment
-
+            self.synaptic_weights += ((1 - self.reg*self.learning_rate) *
+                            self.synaptic_weights * self.learning_rate * adjustment)
     
+'''
+class NewPerceptron(object):
+    def __init__(self,n_iterations=10,learning_rate=0.01,regul_rate=0.5):
+        self.n_iterations = n_iterations
+        self.learning_rate = learning_rate
+        
+
+    def activation_function(self,x,derivative=False):
+        if derivative:
+            return x * (1 - x)
+        else:
+            return 1 /(1 + np.exp(-x))
+        return None
+
+    def fit(self,X,y):
+        n_samples,n_features = np.shape(X)
+        b,n_outputs = np.shape(y)
+
+        # Initialization
+        limit = 1 / sqrt(n_features)
+        self.W = np.random.uniform(-limit,limit,(n_features,n_outputs))
+        self.w0 = np.zeros((1,n_outputs))
+        print(X,y)
+        print(self.W,self.w0)
+        print(self.W.shape)
+        print(np.dot(X,self.W) + self.w0)
+        for i in range(self.n_iterations):
+            linear_output = np.dot(X,self.W) + self.w0
+            print(linear_output)
+            y_pred = self.activation_function(linear_output)
+            error = (y - y_pred) * (self.activation_function(linear_output,
+                                                                derivative=True))
+            grad = X.T.dot(error)
+            grad_w0 = np.sum(error,axis=0,keepdims=True)
+            # Update
+            self.W -= (1 - self.learning_rate * self.regul_rate)*self.W*self.learning_rate * grad
+            self.w0 -= (1-self.learning_rate*self.regul_rate)*self.w0*self.learning_rate * grad_w0
+
+    def predict(self,X):
+        y_pred = self.activation_function(X.dot(self.W) + self.w0)
+        return y_pred
+'''
