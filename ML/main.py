@@ -1,4 +1,3 @@
-
 import numpy as np
 from random import randrange
 from sklearn.tree import DecisionTreeClassifier
@@ -950,12 +949,15 @@ class Perceptron(object):
     ''' A single perceptron(neuron!) 
     Not working properly returns all 1s
     '''
-    def __init__(self,X_train,y_train):
+    def __init__(self,X_train,y_train,learning_rate=0.01,
+                                number_of_iterations=1000):
         np.random.seed(1)
         self.X_train = X_train
         self.y_train = y_train
         # 1 neuron with 3 inputs and 1 output
         self.synaptic_weights = 2 * np.random.random((self.X_train.shape[1],1)) - 1
+        self.learning_rate = learning_rate
+        self.number_of_iterations = number_of_iterations
 
     def _sigmoid(self,x):
         ''' sigmoid function of x '''
@@ -969,9 +971,9 @@ class Perceptron(object):
         ''' predicting on X_test '''
         return np.round(self._sigmoid(np.dot(X_test,self.synaptic_weights)))
 
-    def fit(self,number_of_iterations=1000):
+    def fit(self):
         ''' training one neuron '''
-        for iteration in range(number_of_iterations):
+        for iteration in range(self.number_of_iterations):
             # Making a prediction on X_train
             output = self.predict(self.X_train)
             # Computing an error(the difference between output and labels)
@@ -979,6 +981,5 @@ class Perceptron(object):
             # The adjustment
             adjustment = np.dot(self.X_train.T,(error*self._sigmoid_derivative(output)))
             # Adjusting
-            self.synaptic_weights += adjustment
-
+            self.synaptic_weights += self.learning_rate * adjustment
     
