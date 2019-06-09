@@ -6,6 +6,8 @@ import sklearn
 from metrics import accuracy_score
 import random as rd
 from math import sqrt
+import cvxopt
+from kernelz import *
 
 
 
@@ -237,15 +239,15 @@ class DecisionTree():
 	    '''
 	    Считает количество экземпляров обучающей выборки классов
 	    Возвращает словарь, где ключ - класс, а значение - количество
-	    '''
+	   
 	    counts = {}
 	    for row in rows:
 	        label = row[-1]
 	        if label not in counts:
 	            counts[label] = 0 
-	        counts[label] += 1
-	    return counts
-
+                counts[label] += 1 
+            return counts
+            '''
 	def is_numeric(self,value):
 	    ''' Возвращает True, если входные данные - число, иначе False '''
 	    return isinstance(value,int) or isinstance(value,float)
@@ -982,4 +984,108 @@ class Perceptron(object):
             adjustment = np.dot(self.X_train.T,(error*self._sigmoid_derivative(output)))
             # Adjusting
             self.synaptic_weights += self.learning_rate * adjustment
+
+
+
+class SVC(object):
+    ''' Support Vector Machine Classifier
+
+    General info: https://en.wikipedia.org/wiki/Support-vector_machine
+    C - Penalty
+    kernel - function linear,polynomial,rbf
+    power - the degree of polynomial kernel (<x1,x2> + coef)**power
+    gamma - from rbf kernel
+    coef - bias term in polynomial kernel
     
+    Kernel of SVC was coded by cvxopt(ConvexOptimization) library
+    That's why i didnt want to realize it from scratch.
+    Essential parts of this algorithm were realized by this library automatically
+    Basically this realization is pointless!
+
+    Learned realization and used code from this page:
+    https://github.com/eriklindernoren/ML-From-Scratch/blob/master/mlfromscratch
+    /supervised_learning/support_vector_machine.py
+    '''
+
+    def __init__(self,C=1,kernel=rbf_kernel,power=4,gamma=None,coef=4):
+        self.C = C
+        self.kernel = kernel
+        self.power = power
+        self.gamma = gamma
+        self.coef = coef
+        self.lagr_multipliers = None
+        self.support_vectors = None
+        self.support_vectors_labels = None
+        self.intercept = None
+
+    def fit(self,X,y):
+        n_samples, n_features = np.shape(X)
+        # Set gamma by default
+        if not self.gamma:
+            self.gamma = 1 / n_features
+        # Initialize kernel method with parameters
+        self.kernel = self.kernel(
+                power=self.power,
+                gamma=self.gamma,
+                coef=self.coef)
+
+        # Kernel Matrix
+        kernel_matrix = np.zeros((n_samples,n_samples))
+        for i in range(n_samples):
+            for j in range(n_samples):
+                kernel_matrix[i,j] = self.kernel(X[i],X[j])
+
+        # Define quadratic problem
+        P = cvxopt.matrix(np.outer(y,y) * kernel_matrix,tc='d')
+        q = cvxopt.matrix(np.ones(n_samples) * -1)
+        A = cvxopt.matrix(y,(1,n_samples),tc='d')
+        b = cvxopt.matrix(0,tc='d')
+
+        if not self.C:
+            G = cvxopt.matrix(np.identity(n_samples) * -1)
+            h = cvxopt.matrix(np.zeros(n_samples))
+        else:
+            G_max = np.identity(n_samples) * -1
+            G_min = np.identity(n_samples)
+            G = cvxopt.matrix(np.vstack((G_max,G_min)))
+            h_max = cvxopt.matrix(np.zeros(n_samples))
+            h_min = cvxopt.matrix(np.ones(n_samples) * self.C)
+            h = cvxopt.matrix(np.vstack((h_max,h_min)))
+        # Solve
+        minimization = cvxopt.solvers.qp(P,q,G,h,A,b)
+
+        # Langrage multipliers
+        lagr_mult = np.ravel(minimization['x'])
+
+        # Extract support vectors
+        # Get indexes of non-zero lagr. multipliers
+        idx = lagr_mult > 1e-7
+        # Get the corresponding lagr. multipliers
+        self.lagr_multipliers = lagr_mult[idx]
+        # Get the samples that will act as support vectors
+        self.support_vectors = X[idx]
+        # Get the corresponding labels
+        self.support_vector_labels = y[idx]
+
+        # Calculate intercept with first support vector
+        self.intercept = self.support_vector_labels[0]
+        for i in range(len(self.lagr_multipliers)):
+            self.intercept -= (self.lagr_multipliers[i] * 
+                    self.support_vector_labels[i] *
+                    self.kernel(self.support_vectors[i],self.support_vectors[0]))
+
+    def predict(self,X):
+        y_pred = []
+        # For each sample 
+        for sample in X:
+            prediction = 0
+            # Classificate
+            for i in range(len(self.lagr_multipliers)):
+                prediction += (self.lagr_multipliers[i] * 
+                        self.support_vector_labels[i] * 
+                        self.kernel(self.support_vectors[i],sample))
+            prediction += self.intercept
+            y_pred.append(np.sign(prediction))
+        return np.array(y_pred)
+
+
