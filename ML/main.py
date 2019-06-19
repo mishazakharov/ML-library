@@ -8,188 +8,192 @@ import random as rd
 from math import sqrt
 import cvxopt
 from kernelz import *
+import math
 
 
 
 def check_data_format(X):
-	''' Проверяет в каком формате данные подаются алгоритму. '''
-	nparray = lambda x: isinstance(x,np.ndarray)
-	if not nparray(X):
-		X = X.values
+    ''' Check a format of data of input algorithm '''
+    nparray = lambda x: isinstance(x,np.ndarray)
+    if not nparray(X):
+        X = X.values
 
-	return X
-
-class LinearRegression():
-	''' Класс линейной регрессии. '''
-
-	def __init__(self,learning_rate=0.00001,number_of_iterations=3000,
-													normalize=False):
-		# Инициализация переменных
-		self.learning_rate = learning_rate
-		self.number_of_iterations = number_of_iterations
-		self.theta = None
-		self.normalize = normalize
-
-	def step_gradient(self,old_theta,vector_x,vector_y):
-		# Количество сэмплов
-		m = len(vector_y)
-		# Вектор параметров
-		theta = old_theta
-		# Вектор дэльта(появляется при векторизации)
-		delta = np.zeros((vector_x.shape[0],1))
-		for i in range(0,m):
-			# Определение векторов x и y
-			x_i = vector_x
-			y_i = vector_y
-			x_i = x_i[:,i].reshape(vector_x.shape[0],1)
-			y_i = y_i[i]
-			# Гипотеза
-			hypothesis = np.dot(theta.T,x_i)
-			constant = (1/m) * (float(hypothesis) - y_i)
-			delta += (x_i) * constant
-			# Обновление весов
-			new_theta = old_theta - (self.learning_rate * delta)
-
-		return new_theta
-
-	def gradient_runner(self,inital_theta,vector_x,vector_y):
-		# Функция обучения модели
-		theta = inital_theta
-		for i in range(self.number_of_iterations):
-			theta = self.step_gradient(theta,vector_x,vector_y)
-
-		return theta
-
-	def fit(self,X,y):
-		X,y = check_data_format(X),check_data_format(y)
-		# Normalizing data by substracting mean and deviding by l2 norm
-		if self.normalize:
-			X = (X - np.mean(X)) / np.linalg.norm(X)
-		# Матрица обучающей выборки n+1 x m размерная
-		x_i = X.T
-		# Добавление x0 = 1
-		vector_x = np.insert(x_i,0,[1],axis=0)
-		vector_y = y
-		# "Случайная" инициализация весов!
-		inital_theta = np.zeros((vector_x.shape[0],1))
-		self.theta = self.gradient_runner(inital_theta,vector_x,vector_y)
-
-	def predict(self,x):
-		x = check_data_format(x)
-		# Normalizing
-		if self.normalize:
-			x = (x - np.mean(x)) / np.linalg.norm(x)
-		# Создание списка, хранящего результаты
-		predictions = []
-		# Определние размера полученного массива
-		m = x.shape[0]
-		# Предсказывает по одному сэмплу, добавляя все предсказания в список
-		for i in range(0,m):
-			x_i = x[i]
-			# Добавление x0 = 1
-			x_i = np.insert(x_i,0,[1],axis=0)
-			# Предсказание 
-			prediction = np.dot(self.theta.T,x_i)
-			predictions.append(prediction)
-		# Составление вектора пр ответов!
-		predictions = np.array(predictions).reshape(-1,1)
-
-		return predictions
-
-	def get_weights():
-		# Функция, возвращающая вектор весов модели!
-		return theta
+    return X
 
 
-class LogisticRegression():
-	''' Класс логистической регрессии. '''
-	def __init__(self,learning_rate=0.00159,number_of_iterations=3000):
 
-		self.learning_rate = learning_rate
-		self.number_of_iterations = number_of_iterations
-		self.theta = None
+class LinearRegression(object):
+    ''' Class of linear regression '''
+    def __init__(self,learning_rate=0.00001,number_of_iterations=3000,
+                                                normalize=False):
+        # Initialization of variables
+        self.learning_rate = learning_rate
+        self.number_of_iterations = number_of_iterations
+        self.theta = None
+        self.normalize = normalize
 
-	def step_gradient(self,old_theta,vektor_x,vektor_y):
-		m = len(vektor_y)
-		# Вектор тэта
-		theta = old_theta
-		# Вектор дэльта начальный
-		delta = np.zeros((vektor_x.shape[0],1))
-		for i in range(0,m):  
-			# Создание вектора n+1 РАЗМЕРНОСТИ(ДОБАВИЛ x0!)
-			x_i = vektor_x
-			y = vektor_y
-			# Н-размерный вектор, содержащий все признаки для 1 экземпляра!
-			x_i = x_i[:,i].reshape((vektor_x.shape[0],1))
-			# Число - целевое значение на m-ом экземпляре!
-			y_i = y[i]
-			# Аргумент функции гипотезы!
-			z = np.dot(theta.T,x_i)
-			# Гипотеза логистической регрессии
-			hypothesis = 1/(1+np.exp(-z))
-			# Расчет констант, почему-то иначе не работает!!!!
-			constant = (1/m) * (float(hypothesis) - y_i)
-			# Новый вектор дельта!
-			delta += (x_i) * constant
-		# Формула шага градиентного спуска в векторной форме!!!
-		new_theta = old_theta - (self.learning_rate * delta)
-		return new_theta
-		# При вызове функции в качестве old_theta будет передаваться new_theta
-		# предыдущего шага, так осуществляется правильное обновление вектора тэта.
+    def step_gradient(self,old_theta,vector_x,vector_y):
+        # Number of samples
+        m = len(vector_y)
+        # Vector full of parameters
+        theta = old_theta
+        # Vector delta(appears from vectorization)
+        delta = np.zeros((vector_x.shape[0],1))
+        for i in range(0,m):
+            # Define vectors x and y 
+            x_i = vector_x
+            y_i = vector_y
+            x_i = x_i[:,i].reshape(vector_x.shape[0],1)
+            y_i = y_i[i]
+            # Hypothesis
+            hypothesis = np.dot(theta.T,x_i)
+            constant = (1/m) * (float(hypothesis) - y_i)
+            delta += (x_i) * constant
+            # Updating weights
+            new_theta = old_theta - (self.learning_rate * delta)
 
-	def gradient_runner(self,initial_theta,vektor_x,vektor_y):
-		theta = initial_theta
-		for i in range(self.number_of_iterations):
-			theta = self.step_gradient(theta,vektor_x,vektor_y)
-		return theta
+        return new_theta
 
-	def fit(self,X,y):
-		X,y = check_data_format(X),check_data_format(y)
-		x_i = X.T
-		vektor_x = np.insert(x_i,0,[1],axis=0)
-		vektor_y = y
-		initial_theta = np.zeros((vektor_x.shape[0],1))
-		self.theta = self.gradient_runner(initial_theta,vektor_x,vektor_y)
+    def gradient_runner(self,initial_theta,vector_x,vector_y):
+        # function to train our model
+        theta = initial_theta
+        for i in range(self.number_of_iterations):
+            theta = self.step_gradient(theta,vector_x,vector_y)
 
-	def predict(self,x):
-		x = check_data_format(x)
-		predictions = []
-		m = x.shape[0]
-		for i in range(0,m):
-			# Формируем вектор предсказаний!
-			x_i = x[i]
-			vektor_x = np.insert(x_i,0,[1],axis=0)
-			z = np.dot(self.theta.T,vektor_x)
-			prediction = 1/(1 + np.exp(-z))
-			# Threshold
-			if prediction > 0.5:
-				prediction = 1
-			else:
-				prediction = 0
-			predictions.append(prediction)
-		predictions = np.array(predictions).reshape(-1,1)	
-		return predictions
+        return theta
+
+    def fit(self,X,y):
+        X,y = check_data_format(X),check_data_format(y)
+        # Normalizing data by subtracting mean and debiding by l2 norm
+        if self.normalize:
+            X = (X - np.mean(X)) / np.linalg.norm(X)
+        # n+1 x m dim matrix
+        x_i = X.T
+        # Adding bias
+        vector_x = np.insert(x_i,0,[1],axis=0)
+        vector_y = y
+        # "Random" weights initialization!
+        initial_theta = np.zeros((vector_x.shape[0],1))
+        self.theta = self.gradient_runner(initial_theta,vector_x,vector_y)
+
+    def predict(self,x):
+        x = check_data_format(x)
+        # Normalizing data by subtracting mean and deviding by l2 norm
+        if self.normalize:
+            x = (x - np.mean(x)) / np.linalg.norm(x)
+        # List for our predictions
+        predictions = []
+        # Defining size
+        m = x.shape[0]
+        # Predicting on each sample, adding it to our container-list
+        for i in range(0,m):
+            x_i = x[i]
+            # Adding bias
+            x_i = np.insert(x_i,0,[1],axis=0)
+            # Prediction
+            prediction = np.dot(self.theta.T,x_i)
+            predictions.append(prediction)
+        # Answer
+        predictions = np.array(predictions).reshape(-1,1)
+
+        return predictions
+
+    def get_weights(self):
+        # Method that returns weights of our model
+        return self.theta
 
 
-class SVM():
-	''' Метод опроных векторов. '''
-	def __init__(self):
-		raise NotImplementedError
+
+class LogisticRegression(object):
+    ''' Logistic regression class '''
+    def __init__(self,learning_rate=0.00159,number_of_iterations=3000):
+        
+        self.learning_rate = learning_rate
+        self.number_of_iterations = number_of_iterations
+        self.theta = None
+
+    def step_gradient(self,old_theta,vektor_x,vektor_y):
+        m = len(vektor_y)
+        # Weights
+        theta = old_theta
+        # Delta
+        delta = np.zeros((vektor_x.shape[0],1))
+        for i in range(0,m):
+            # Creating n+1 dim vector(adding bias)
+            x_i = vektor_x
+            y = vektor_y
+            # N-dim vector which consist of all attributes of 1 sample
+            x_i = x_i[:,i].reshape(vektor_x.shape[0],1)
+            # Label on this sample
+            y_i = y[i]
+            # Argument of our sigmoid function
+            z = np.dot(theta.T,x_i)
+            # Sigmoid function
+            hypothesis = 1/(1 + np.exp(-z))
+            # Constants
+            constant = (1/m) * (float(hypothesis) - y_i)
+            # New delta
+            delta += (x_i) * constant
+        # Gradient descent
+        new_theta = old_theta - (self.learning_rate * delta)
+        return new_theta
+        # When we call this method old_theta = new_theta of the 
+        # past step(right way of updationg our weights!
+
+    def gradient_runner(self,initial_theta,vektor_x,vektor_y):
+        theta = initial_theta
+        for i in range(self.number_of_iterations):
+            theta = self.step_gradient(theta,vektor_x,vektor_y)
+        return theta
+
+    def fit(self,X,y):
+        X,y = check_data_format(X),check_data_format(y)
+        x_i = X.T
+        vektor_x = np.insert(x_i,0,[1],axis=0)
+        vektor_y = y
+        initial_theta = np.zeros((vektor_x.shape[0],1))
+        self.theta = self.gradient_runner(initial_theta,vektor_x,vektor_y)
+
+    def predict(self,x):
+        x = check_data_format(x)
+        m = x.shape[0]
+        predictions = list()
+        for i in range(0,m):
+            # Prediction vector
+            x_i = x[i]
+            vektor_x = np.insert(x_i,0,[1],axis=0)
+            z = np.dot(self.theta.T,vektor_x)
+            prediction = 1/(1 + np.exp(-z))
+            # Threshold
+            if prediction > 0.5:
+                prediction = 1
+            else:
+                prediction = 0
+            predictions.append(prediction)
+        predictions = np.array(predictions).reshape(-1,1)
+        return predictions
 
 
-# ЭТОТ КЛАСС ОТНОСИТСЯ К ДЕРЕЬВЕЯМ ПРИНЯТИЯ РЕШЕНИЙ!
-class Question():
-    ''' Вопрос используется для разделение данных.
-    Класс записывает номер колонки и связанное с ним значение.
-    Метод "match" задает вопрос и возвращает True,если ответ "да".
+
+class SVM(object):
+    ''' Support Vector Machine '''
+    def __init__(self):
+        raise NotImplementedError
+
+
+
+# Class for decision tree!
+class Question(object):
+    ''' Question is used for data partition 
+    Class track number of
+    Method "match" asks question and returns True if answer is "yes".
     '''
     def __init__(self,column,value):
         self.column = column
         self.value = value
 
     def match(self,example):
-        # Сравнивает значение признака в example со значением признака в
-        # вопросе(фактически, задает вопрос)
+        # Asks a question
         b = DecisionTree()
         val = example[self.column]
         if b.is_numeric(val):
@@ -198,26 +202,27 @@ class Question():
             return val == self.value
 
     def __repr__(self):
-        # Вспомогательный метод, выводящий вопрос в читаемом формате
+        # This special method helps to print everythin out in
+        # a readbl way
         condition = '=='
         if is_numeric(self.value):
             condition = '>='
         return 'Is %s %s %s?' % (
-            header[self.column],condition,str(self.value))
+                header[self.column],condition,str(self.value))
 
-# Это тоже!!!
-class Leaf():
-    ''' Листовой узел классифицирует данные. Leaf - лист
-    Хранит словарь с ключами-классами и значениями, показывающими
-    сколько раз этот класс встречался в данных, дошедших до листового узла
+# Leaf for decision tree
+class Leaf(object):
+    ''' Leaf node classifies data.
+    It contain a dictionary(key - class,value - number of samples of this class)
     '''
     def __init__(self,rows):
-    	b = DecisionTree()
-    	self.predictions = b.class_counts(rows)
+        b = DecisionTree()
+        self.predictions = b.class_counts(rows)
 
-class Decision_Node():
-    ''' Decision Node задает вопрос.
-    Содержит ссылку на вопрос и на два дочерних узла
+
+class Decision_Node(object):
+    ''' Decision Node asks a question
+    Contain reference to a question and 2 nodes
     '''
     def __init__(self,question,true_branch,false_branch):
         self.question = question
@@ -225,549 +230,521 @@ class Decision_Node():
         self.false_branch = false_branch
 
 
-class DecisionTree():
-	''' Дерево принятя решений. '''
-	def __init__(self):
-		pass
+class DecisionTree(object):
+    ''' Decision Tree class '''
+    def __init__(self):
+        pass
+
+    def unique_vals(self,rows,col):
+        ''' Returns number of unique elemts of a column '''
+        return set([row[col] for row in rows])
+
+    def class_counts(self,rows):
+        '''
+        Counts number of samples of a class in learning data
+        Returns a dictionary, where key - class, value - number
+        '''
+        counts = {}
+        for row in rows:
+            label = row[-1]
+            if label not in counts:
+                counts[label] = 0
+                counts[label] += 1
+        return counts
+
+    def is_numeric(self,value):
+        ''' Returns True if input data is number, else False '''
+        return isinstance(value,int) or isinstance(value,float)
+
+    def partition(self,rows,question):
+        ''' Partition of our dataset
+        For every row in data
+        '''
+        true_rows,false_rows = [],[]
+        for row in rows:
+            if question.match(row):
+                true_rows.append(row)
+            else:
+                false_rows.append(row)
+        return true_rows,false_rows
+
+    def gini(self,rows):
+        ''' Counts gini index '''
+        counts = self.class_counts(rows)
+        impurity = 1
+        for lbl in counts:
+            prob_of_lbl = counts[lbl] / float(len(rows))
+            impurity -= prob_of_lbl ** 2
+        return impurity
+
+    def information_gain(self,left,right,current_uncertainty):
+        ''' Counts information gain
+        Uncertainty of the first node minus weighted uncertainties 
+        of two next nodes(DOCHERNIX)
+        '''
+        p = float(len(left)) / (len(left) + len(right))
+        return current_uncertainty - (p * self.gini(left) - 
+                                    (1 - p) * self.gini(right))
+
+    def find_best_split(self,rows):
+        ''' Finds best split with a brute-force method(checking every attri-
+        bute, counting information gain for every partition etc.
+        '''
+        # Contains best value of inf_gain
+        best_gain = 0
+        # Contains best question
+        best_question = None
+        # Uncertainty of first node
+        current_uncertainty = self.gini(rows)
+        # Number of attributes
+        n_features = len(rows[0]) - 1
+        # For every attribute
+        for col in range(n_features):
+            # Contatins unique values
+            values = set([row[col] for row in rows])
+            # For every value of attribute
+            for val in values:
+                question = Question(col,val)
+                # Partition of data based on a current question
+                true_rows,false_rows = self.partition(rows,question)
+                # If data is not partitianing with this question
+                # we just skip that value
+                if len(true_rows) == 0 or len(false_rows) == 0:
+                    continue
+                # Counting inf_gain after partition
+                gain = self.information_gain(true_rows,false_rows,
+                                                current_uncertainty)
+                # Updationg the best gain and the best question
+                if gain >= best_gain:
+                    best_gain,best_question = gain,question
+        return best_gain,best_question
+
+    def fit(self,X,y):
+        ''' Builds a tree '''
+        # no API
+        rows = np.c_[X,y]
+        # Finding best question and best gain
+        gain,question = self.find_best_split(rows)
+        # If gain = 0 then we cant ask question anymore
+        # that's why we return leaf.(Base of a recursive function)
+        if gain == 0:
+            return Leaf(rows)
+        # If we are here then we ve already found attribue/value
+        # for partition
+        true_rows,false_rows = self.partition(rows,question)
+        true_X = np.delete(true_rows,-1,1)
+        true_y = np.array(true_rows)[:,-1]
+        false_X = np.delete(false_rows,-1,1)
+        false_y = np.array(false_rows)[:,-1]
+        # Recursively build true branch and false branch
+        true_branch = self.fit(true_X,true_y)
+        false_branch = self.fit(false_X,false_y)
+        # Return question node
+        # Keeps track of the best attribute/value and what branches to follow
+        return Decision_Node(question,true_branch,false_branch)
+
+    def classify(self,row,node):
+        # Base
+        if isinstance(node,Leaf):
+            return node.predictions
+        if node.question.match(row):
+            return self.classify(row,node.true_branch)
+        else:
+            return self.classify(row,node.false_branch)
+
+    def predict(self,test_data,my_tree):
+        exes = []
+        for row in test_data:
+            b = (self.classify(row,my_tree))
+            for x in b.keys():
+                exes.append(x)
+
+        return np.array(exes).reshape(-1,1)
 
 
-	def unique_vals(self,rows,col):
-		'''Возвращает количество уникальных элементов колонки'''
-		return set([row[col] for row in rows])
 
-	def class_counts(self,rows):
-	    '''
-	    Считает количество экземпляров обучающей выборки классов
-	    Возвращает словарь, где ключ - класс, а значение - количество
-	   
-	    counts = {}
-	    for row in rows:
-	        label = row[-1]
-	        if label not in counts:
-	            counts[label] = 0 
-                counts[label] += 1 
-            return counts
-            '''
-	def is_numeric(self,value):
-	    ''' Возвращает True, если входные данные - число, иначе False '''
-	    return isinstance(value,int) or isinstance(value,float)
+class RandomForest(object):
+    ''' Random forest class '''
+    def __init__(self,n_estimators=3,criterion='gini',max_depth=None):
+        ''' Initializing variables! '''
+        self.n_estimators = n_estimators
+        self.criterion = criterion
+        self.max_depth = max_depth
+        self.predictions = []
+        self.trees = []
 
-	def partition(self,rows,question):
-	    ''' Разделяет данные.
-	    Для каждой строки в данных
-	    '''
-	    true_rows,false_rows = [], []
-	    for row in rows:
-	        if question.match(row):
-	            true_rows.append(row)
-	        else:
-	            false_rows.append(row)
-	    return true_rows,false_rows
+    def subsample(self,dataset_x,dataset_y,ratio):
+        ''' Function that 
+        '''
+        dataset = np.c_[dataset_x,dataset_y]
+        sample = list()
+        n_sample = round(len(dataset) * ratio)
+        while len(sample) < n_sample:
+            index = randrange(len(dataset))
+            sample.append(dataset[index])
+        return sample
 
-	def gini(self,rows):
-	    ''' Считает индекс Джинни. '''
-	    counts = self.class_counts(rows)
-	    impurity = 1
-	    for lbl in counts:
-	        prob_of_lbl = counts[lbl] / float(len(rows))
-	        impurity -= prob_of_lbl ** 2
-	    return impurity
+    def fit(self,X,y):
+        ''' Building random forest '''
+        X,y = check_data_format(X),check_data_format(y)
+        for i in range(self.n_estimators):
+            # Preparing data (simple bagging)
+            new_data = np.array(self.subsample(X,y,0.5))
+            # Extracting X and y from new_data
+            new_y = new_data[:,-1].reshape(-1,1)
+            new_X = np.delete(new_data,-1,1)
+            tree = DecisionTree()
+            # Worst realization!
+            b = tree.fit(new_X,new_y)
+            self.trees.append(b)
 
-	def information_gain(self,left,right,current_uncertainty):
-	    ''' Считает увеличение информации.
-	    Неопределенность начального узла минус взвешенные неопределенности 
-	    двух дочерних узлов
-	    '''
-	    p = float(len(left)) / (len(left) + len(right))
-	    return current_uncertainty - p * self.gini(left) - (1-p) * self.gini(right)
+    def predict(self,predict_on_X):
+        ''' Prediction of our RF!
+        '''
+        predict_on_X = check_data_format(predict_on_X)
+        conclusion = np.zeros((predict_on_X.shape[0],1))
+        tree = DecisionTree()
+        for b in self.trees:
+            prediction = tree.predict(predict_on_X,b)
+            conclusion = conclusion + prediction
 
-	def find_best_split(self,rows):
-	    ''' Находит наилучший вопрос с помощью перебора каждого атрибута и его
-	        значения, рассчитывая при этом увеличение информации.
-	    '''
-	    best_gain = 0 # хранит лучшее значение inf_gain
-	    best_question = None # хранит лучши вопрос
-	    current_uncertainty = self.gini(rows) # неопределенность начального узла
-	    n_features = len(rows[0]) - 1 # количество колонок(признаков) - 1
-	    for col in range(n_features): # для каждого признака
-	        values = set([row[col] for row in rows]) # хранит уникальные значения
-	        for val in values: # для каждого значения признака
-	            question = Question(col,val) 
-	            # разделяет данные, основываясь на текущем вопросе
-	            true_rows,false_rows = self.partition(rows,question)
-	            # если данные не разделяются этим вопросом,
-	            # то пропускае это значение признака
-	            if len(true_rows) == 0 or len(false_rows) == 0:
-	                continue
-	            # вычисляем увеличение информации после разделения по вопросу
-	            gain = self.information_gain(true_rows,false_rows,
-	            								current_uncertainty)
-	            # обновляется лучший gain и лучший question
-	            if gain >= best_gain:
-	                best_gain,best_question = gain,question
-	    return best_gain,best_question
+        conclusion = conclusion / int(len(self.trees))
+        # Return rounded vector
+        return np.round(conclusion)
 
 
-	def fit(self,X,y):
-	    ''' Строит дерево.
-	    '''
-	    # Получаем rows. СЕЙЧАС ЛЕНЬ ПЕРЕПИСЫВАТЬ КОД ПОД НУЖНЫЙ API!!!!!
-	    rows = np.c_[X,y]
-	    # находим лучший вопрос и лучшее увеличение
-	    gain,question = self.find_best_split(rows)
-	    # если увеличение 0, то мы не можем больше задавать вопросы, поэтому
-	    # возвращаем лист. (Базовый случай реукрсивной функции)
-	    if gain == 0:
-	        return Leaf(rows)
-	    # если мы дошли до сюда, то мы нашли полезный атрибут/значение
-	    # с помощью которого мы будем разделять данные
-	    true_rows,false_rows = self.partition(rows,question)
-	    true_X = np.delete(true_rows,-1,1)
-	    true_y = np.array(true_rows)[:,-1]
-	    false_X = np.delete(false_rows,-1,1)
-	    false_y = np.array(false_rows)[:,-1]
-	    # рекурсивно создаем true branch
-	    true_branch = self.fit(true_X,true_y)
-	    # рекурсивно создаем false branch
-	    false_branch = self.fit(false_X,false_y)
-	    # Возвращаем узел вопроса(Question Node)
-	    # Записывает лучший атрибут/значение и каким ветвям следовать(true/false)
-	    return Decision_Node(question,true_branch,false_branch)
 
-	def classify(self,row,node):
-	    # Базовый случай, мы достигли листа
-		if isinstance(node,Leaf):
-			return node.predictions
-		if node.question.match(row):
-			return self.classify(row,node.true_branch)
-		else:
-			return self.classify(row,node.false_branch)
-
-	def predict(self,test_data,my_tree):
-		exes = []
-		for row in test_data:
-		    b = (self.classify(row,my_tree))
-		    for x in b.keys():
-		        exes.append(x)
-
-		return np.array(exes).reshape(-1,1)
+class Bagging(object):
+    ''' Ensemble method - bagging. '''
+    def __init__(self):
+        raise NotImplementedError
 
 
-'''
-Наследование классов в DecisionTree не нужно!!!
-Просто создать экземпляры вне класса и вызывать их в класс!!! 
-намного проще!!!!!!
-'''
+            
+class AdaBoostClassifier(object):
+    ''' Ensemble method - boosting(AdaBoost)
+    Classifies -1 and 1 only
+    My Decision Tree doesn't have needed parameters
+    so i will use sklearn.tree.DecisionTreeClassifier
+    '''
+    def __init__(self,n_estimators=50,base_estimator=''):
+        self.n_estimators = n_estimators
+        self.base_estimator = base_estimator
+
+    def fit(self,X,Y):
+        X,Y = check_data_format(X),check_data_format(Y)
+        # List for classifiers
+        self.models = []
+        # Alpha - weight of every classifier
+        self.alphas = []
+        N = len(X)
+        # Weights of each sample(1/N by default)
+        W = np.ones(N)/N
+        for m in range(self.n_estimators):
+            if self.base_estimator == '':
+                # Default classifier - DT
+                tree = DecisionTreeClassifier(max_depth=1)
+                tree.fit(X,Y,sample_weight=W)
+                P = tree.predict(X)
+            err = W.dot(P != Y)
+            alpha = 0.5 * (np.log(1-err) - np.log(err))
+            # Vectorized form
+            W = W * np.exp(-alpha*Y*P)
+            # Normalizing
+            W = W / W.sum()
+            self.models.append(tree)
+            self.alphas.append(alpha)
+
+    def predict(self,X):
+        ''' Class for classifing '''
+        X = check_data_format(X)
+        N = len(X)
+        FX = np.zeros(N)
+        for alpha,tree in zip(self.alphas,self.models):
+            FX += alpha * tree.predict(X)
+        return np.sign(FX)
 
 
+
+class StackingRegression(object):
+    ''' Ensebmle method - stacking!
+    Only realized creating (neshodnix) classificators
+    with different algorithms!
+    Meta-regressor - linear regression
+    '''
+    def __init__(self,list_of_models):
+        # List of ensemble models
+        self.list_of_models = list_of_models
+        # List to keep track of predictions on validation dataset
+        self.predictions_on_valid = []
+        # List to keep track of predictions on test dataset
+        self.predictions_on_test = []
+
+    def fit(self,X,y):
+        X,y = check_data_format(X),check_data_format(y)
+        train_X,valid_X,train_y,valid_y = train_test_split(X,y,test_size=0.5)
+        for model in self.list_of_models:
+            # Predictions on validation dataset
+            model.fit(train_X,train_y)
+            prediction = model.predict(valid_X)
+            self.predictions_on_valid.append(prediction)
+
+        # Making it a global variable for the whole class!
+        self.valid_y = valid_y
+        self.train_X = train_X
+        self.train_y = train_y
+
+    def predict(self,X):
+        ''' If we use sklearn.linear_model.LinearRegression
+        then MSE is much lower !!! 
+        '''
+        X = check_data_format(X)
+        # Predictions on test dataset
+        for model in self.list_of_models:
+            model.fit(self.train_X,self.train_y)
+            prediction_on_test = model.predict(X)
+            self.predictions_on_test.append(prediction_on_test)
+
+        # Transforming our predictions in np.array
+        new_test = np.zeros((self.predictions_on_test[0].shape[0],1))
+        for prediction in self.predictions_on_test:
+            new_test = np.c_[new_test,prediction]
+        # Deleting 0 column
+        X_test = np.delete(new_test,0,1)
+        # Meta-regressor is always linear regression(now)
+        stacking_model = sklearn.linear_model.LinearRegression()
+        new = np.zeros((self.predictions_on_valid[0].shape[0],1))
+        # Transforming in np.array
+        for prediction in self.predictions_on_valid:
+            new = np.c_[new,prediction]
+        # Deleting zero column
+        new_X = np.delete(new,0,1)
+        stacking_model.fit(new_X,self.valid_y.reshape(-1,1))
+        predict_on_test = stacking_model.predict(X_test)
+
+        return prediction_on_test
+
+
+
+class VotingClassifier(object):
+    ''' Common vote classifier! '''
+    def __init__(self,estimators):
+        # List of models
+        self.estimators = estimators
+        # Keeping fit's of all our models
+        self.models = []
+
+    def fit(self,X,y):
+        for each_model in self.estimators:
+            fit = each_model.fit(X,y)
+            self.models.append(fit)
+
+    def predict(self,X):
+        #
+        predictions = np.zeros((X.shape[0],1))
+        for number,model in enumerate(self.estimators):
+            try:
+                prediction = model.predict(X).reshape(-1,1)
+            except TypeError:
+                prediction = model.predict(X,self.models[number]).reshape(-1,1)
+            predictions += prediction
+        # Deviding by number of models
+        predictions = predictions / len(self.models)
+        function = lambda x: round(x)
+        # Rounding values!
+        predictions = np.round(predictions)
+
+        return predictions
+
+
+
+class BaggingClassifier(object):
+    ''' Bagging classifier 
+    Getting (neshodnie) models by subsampling our input_data!
+    '''
+    def __init__(self,base_estimator='',n_estimators=10):
+        self.base_estimator = base_estimator
+        self.n_estimators = n_estimators
+        # List with trained models
+        self.list_of_trained_estimators = []
+
+    def subsample(self,X,y,ratio):
+        ''' already talked about it '''
+        sample_X = list()
+        sample_y = list()
+        n_sample = round(len(X) * ratio)
+        while len(sample_X) < n_sample:
+            index = randrange(len(X))
+            sample_X.append(X[index])
+            sample_y.append(y[index])
+
+        return sample_X,sample_y
+
+    def fit(self,X,y):
+        X,y = check_data_format(X),check_data_format(y)
+        # Base model - decision tree
+        if self.base_estimator == '':
+            self.base_estimator = DecisionTreeClassifier()
+        # Same principle
+        ratio = 1 / self.n_estimators
+        for i in range(self.n_estimators):
+            new_X,new_y = self.subsample(X,y,ratio)
+            b = self.base_estimator.fit(new_X,new_y)
+            self.list_of_trained_estimators.append(b)
+
+    def predict(self,X):
+        X = check_data_format(X)
+        predictions = np.zeros((X.shape[0],1))
+        for model in self.list_of_trained_estimators:
+            predictions += model.predict(X).reshape(-1,1)
+        predictions = predictions / self.n_estimators
+        predictions = np.array(predictions)
+
+        return predictions
+
+
+
+class CrossEntropy(object):
+    ''' Class for cross-entropy loss function. '''
+    def __init__(self):
+        pass
+
+    def mist(self,y,p):
+        # Don't devide by zero
+        p = np.clip(p,1e-15,1-1e-15)
+        return -y*np.log(p) - (1-y)*np.log(1-p)
+
+    def gradient(self,y,p):
+        p = np.clip(p,1e-15,1-1e-15)
+        p,y = p.reshape(-1,1),y.reshape(-1,1)
+
+        return -(y/p) + (1-y) / (1 - p)
     
 
-class RandomForest():
-	''' Случайный лес. '''
-	def __init__(self,n_estimators=3,criterion='gini',max_depth=None):
-		''' Инициализация переменных, не все реализованы! '''
-		self.n_estimators = n_estimators
-		self.criterion = criterion 
-		self.max_depth = max_depth
-		self.predictions = []
-		self.trees = []
+class MSE(object):
+    ''' MSE loss function '''
+    def __init__(self):
+        pass
 
-	def subsample(self,dataset_x,dataset_y, ratio):
-		''' Функция, прверащающая исходный training_data
-		в обучающий поднабор. Размер зависит от коэффицента ratio!
-		Индексы выбираются случайно каждый раз.
-		'''
-		dataset = np.c_[dataset_x,dataset_y]
-		sample = list()
-		n_sample = round(len(dataset) * ratio)
-		while len(sample) < n_sample:
-			index = randrange(len(dataset))
-			sample.append(dataset[index])
-		return sample
+    def mist(self,y,y_pred):
+        return 0.5 * (y-y_pred)**2
 
-	def fit(self,X,y):
-		''' Построение случайного леса. '''
-		X,y = check_data_format(X),check_data_format(y)
-		for i in range(self.n_estimators):
-			# Подготовка данных (Бэггинг)
-			new_data = np.array(self.subsample(X,y,0.5))
-			# Так как new_data возвращает пробэггиный датасет с икс и игрек
-			# Поэтому ниже разделяем его на new_y и new_X
-			new_y = new_data[:,-1].reshape(-1,1)
-			new_X = np.delete(new_data,-1,1)
-			tree = DecisionTree()
-			# ДА, НАСТОЛЬКО УЖАСНАЯ РЕАЛИЗАЦИЯ ИНТЕРФЕЙСА У ЭТОГО КЛАССА!!!!
-			b = tree.fit(new_X,new_y)
-			self.trees.append(b)
+    def gradient(self,y,y_pred):
+        return -(y-y_pred)
 
 
-	def predict(self,predict_on_X):
-		''' Предсказания случайного лсеа!
-			Предсказания всего ансамбля деревьев будут получатся следующим
-			образом - создаем пустой np.array подходящего размера,
-			суммируем предсказания всех деревьев и делим вектор на 
-			их количество и получаем предсказание всего ансамбля!!!! 
-		'''
-		predict_on_X = check_data_format(predict_on_X)
-		conclusion = np.zeros((predict_on_X.shape[0],1))
-		tree = DecisionTree()
-		for b in self.trees:
-			prediction = tree.predict(predict_on_X,b)
-			print(prediction.shape)
-			conclusion =  conclusion + prediction
+class GradientBoosting(object):
+    ''' Super-class of gradient boosting (on trees) '''
+    def __init__(self,n_estimators,learning_rate,
+            min_samples_split,min_impurity,max_depth,regression):
+        self.n_estimators = n_estimators
+        self.learning_rate = learning_rate
+        self.min_samples_split = min_samples_split
+        self.min_impurity = min_impurity
+        self.max_depth = max_depth
+        self.regression = regression
+        self.trees = []
+        self.loss = MSE()
+        # Initializing trees for classification
+        if not self.regression:
+            self.loss = CrossEntropy()
+            '''
+            for _ in range(self.n_estmiators):
+                tree = sklearn.tree.DecisionTreeClassifier(
+                        min_samples_split=self.min_samples_split,
+                        min_impurity=self.min_impurity,
+                        max_depth=self.max_depth)
+                self.trees.append(tree)
+            '''
+        # Initializing trees for regression
+        for _ in range(self.n_estimators):
+            tree = sklearn.tree.DecisionTreeRegressor(
+                    min_samples_split=self.min_samples_split,
+                    min_impurity_split=self.min_impurity,
+                    max_depth=self.max_depth)
+            self.trees.append(tree)
 
-		conclusion = conclusion / int(len(self.trees))
-		# Возвращаем округленные значения вектора!
-		return np.round(conclusion)	
+    def fit(self,X,y):
+        X,y = check_data_format(X),check_data_format(y)
+        # Default by mean
+        y_pred = np.full(np.shape(y),np.mean(y,axis=0))
+        for tree in self.trees:
+            # Gradient of loss function
+            gradient = self.loss.gradient(y,y_pred)
+            tree.fit(X,gradient)
+            update = tree.predict(X)
+            # Learning rate just for regularization
+            y_pred -= self.learning_rate * update
 
-	
+    def predict(self,X):
+        X = check_data_format(X)
+        # The only way to form predictions in GB
+        y_pred = np.array([])
+        for tree in self.trees:
+            update = tree.predict(X)
+            update = (self.learning_rate*update)
+            y_pred = -update if not y_pred.any() else y_pred - update
+        # Classifiaction 
+        if not self.regression:
+            y_pred = np.exp(y_pred) / (1 + np.exp(y_pred))
+            # rounding (threshold = 0.5)
+            y_pred = np.round(y_pred)
 
-class Bagging():
-	''' Анасмаблевый метод обучения - баггинг. '''
-	def __init__(self):
-		raise NotImplementedError
-
-
-
-
-class AdaBoostClassifier():
-	''' Ансамблевый метод обучения - бустинг(AdaBoost)
-		Классифицирует -1 и 1!
-		В моих классах еще не реализован параметр sample_weigth,
-		поэтому при создании этого класса придется использовать 
-		sklearn модели...
-	'''
-	def __init__(self,n_estimators=50,base_estimator=''):
-		self.n_estimators = n_estimators
-		self.base_estimator = base_estimator
-
-	def fit(self,X,Y):
-		X,Y = check_data_format(X),check_data_format(Y)
-		# Список, хранящий классификаторы
-		self.models = []
-		# Альфа - это вес каждого классификатора
-		self.alphas = []
-		# N - количество экземпляров в датасете
-		N = len(X)
-		# Вектор весов, ищначально инициализированный 1/N
-		W = np.ones(N)/N
-		for m in range(self.n_estimators):
-			if self.base_estimator == '':
-				# Стаданартной моделью используется дерево принятие решений
-				tree = DecisionTreeClassifier(max_depth=1)
-				tree.fit(X,Y,sample_weight=W)
-				P = tree.predict(X)
-			err = W.dot(P != Y)
-			alpha = 0.5 * (np.log(1-err) - np.log(err))
-			# Vecotrized form
-			W = W*np.exp(-alpha*Y*P)
-			# Нормализуем
-			W = W/W.sum()
-			self.models.append(tree)
-			self.alphas.append(alpha)
-
-	def predict(self,X):
-		X = check_data_format(X)
-		''' Класс предсказаний. '''
-		N = len(X)
-		FX = np.zeros(N)
-		for alpha,tree in zip(self.alphas,self.models):
-			FX += alpha*tree.predict(X)
-		return np.sign(FX)#, FX
-
-
-
-class StackingRegression():
-	''' Ансамблевый метод - стэкинг!
-	Пока реализовано только создание несходных моделей путем обучения
-	разными алгоритмами!
-	Мета-регрессором всегда выступает модель линейной регрессии(пока что!)
-	Позже эту опцию можно будет выставлять самому!!
-	'''
-	def __init__(self,list_of_models):
-		# Список с моделями ансамбля
-		self.list_of_models = list_of_models
-		# Список для хранения предсказаний на наборе валидации
-		self.predictions_on_valid = []
-		# Список для хранения предсказаний на испытательном наборе
-		self.predictions_on_test = []
-
-
-	def fit(self,X,y):
-		X,y = check_data_format(X),check_data_format(y)
-		train_X,valid_X,train_y,valid_y = train_test_split(X,y,test_size=0.5)
-		for model in self.list_of_models:
-			# Предсказания для набора валидации
-			model.fit(train_X,train_y)
-			prediction = model.predict(valid_X)
-			self.predictions_on_valid.append(prediction)
-			
-		# Просто чтобы достать valid_y для новой модели в методе predict
-		# со всеми так!
-		self.valid_y = valid_y
-		self.train_X = train_X
-		self.train_y = train_y
-
-
-	def predict(self,X):
-		''' Что нужно исправить:
-		Если использовать sklearn.linear_model.LinearRegression,
-		то среднеквадратичная ошибка предсказаний уменьшается в разы!!!!
-		'''
-		X = check_data_format(X)
-		# Предсказания на испытательном наборе!
-		for model in self.list_of_models:
-			model.fit(self.train_X,self.train_y)
-			prediction_on_test = model.predict(X)
-			self.predictions_on_test.append(prediction_on_test)
-
-		# Преобразуем список с предсказаниями модели на испытательном наборе
-		# в np.array
-		new_test = np.zeros((self.predictions_on_test[0].shape[0],1))
-		for prediction in self.predictions_on_test:
-			new_test = np.c_[new_test,prediction]
-		# Удаляем колонку нулей
-		X_test = np.delete(new_test,0,1)
-		# Мета-регрессором всегда выступает линейная регрессия(сейчас!)
-		# Если использовать sklearn.linear_model.LinearRegression,
-		# то среднеквадратичная ошибка предсказаний уменьшается в разы!!!!
-		stacking_model = sklearn.linear_model.LinearRegression()
-		new = np.zeros((self.predictions_on_valid[0].shape[0],1))
-		# Преобразуем списк с предсказаниями модели на наборе валидации
-		# в np.array!
-		for prediction in self.predictions_on_valid:
-			new = np.c_[new,prediction]
-		# Удаляем колокнку нулей
-		new_X = np.delete(new,0,1)
-		stacking_model.fit(new_X,self.valid_y.reshape(-1,1))
-		prediction_on_test = stacking_model.predict(X_test)
-
-		return prediction_on_test
-
-
-
-class VotingClassifier():
-	''' Обычынй классифиатор голосвания! '''
-	def __init__(self,estimators):
-		# Список из моделей
-		self.estimators = estimators
-		# Храним фиты всех моделей
-		self.models = []
-
-
-	def fit(self,X,y):
-		for each_model in self.estimators:
-			fit = each_model.fit(X,y)
-			self.models.append(fit)
-
-
-	def predict(self,X):
-		# 
-		predictions = np.zeros((X.shape[0],1))
-		for model in self.models:
-			prediction = model.predict(X).reshape(-1,1)
-			predictions += prediction
-		# Делим на количество моделей
-		predictions = predictions / len(self.models)
-		function = lambda x: round(x)
-		# Округляем значения!
-		predictions = np.round(predictions)
-
-		return predictions
-
-
-
-class BaggingClassifier():
-	''' Классификатор на баггинге '''
-	def __init__(self,base_estimator='',n_estimators=10):
-		self.base_estimator = base_estimator
-		self.n_estimators = n_estimators
-		# Список с обученными моделями
-		self.list_of_trained_estimators = []
-
-	def subsample(self,X,y,ratio):
-		''' Функция, прверащающая исходный training_data
-		в обучающий поднабор. Размер зависит от коэффицента ratio!
-		Индексы выбираются случайно каждый раз.
-		'''
-		sample_X = list()
-		sample_y = list()
-		n_sample = round(len(X) * ratio)
-		while len(sample_X) < n_sample:
-			index = randrange(len(X))
-			sample_X.append(X[index])
-			sample_y.append(y[index])
-
-		return sample_X,sample_y
-
-	def fit(self,X,y):
-		X,y = check_data_format(X),check_data_format(y)
-		# Базовая модель - дерево принятия решений
-		if self.base_estimator == '':
-			self.base_estimator = DecisionTreeClassifier()
-		# Разделяем данные, чтобы, используя одинаковые алгоритмы обчуения
-		# получить несходные модели(они будут совершать ошибки разного рода)
-		ratio = 1/self.n_estimators
-		for i in range(self.n_estimators):
-			new_X,new_y = self.subsample(X,y,ratio)
-			b = self.base_estimator.fit(new_X,new_y)
-			self.list_of_trained_estimators.append(b)
-
-	def predict(self,X):
-		X = check_data_format(X)
-		predictions = np.zeros((X.shape[0],1))
-		for model in self.list_of_trained_estimators:
-			predictions += model.predict(X).reshape(-1,1)
-		predicitons = predictions / self.n_estimators
-		predictions = np.round(predicitons)
-
-		return predictions
-
-
-class CrossEntropy():
-	''' Класс для функции кросс-энтропии. '''
-	def __init__(self):
-		pass
-
-	def mist(self,y,p):
-		# Не делим на 0
-		p = np.clip(p,1e-15,1-1e-15)
-		return - y*np.log(p) - (1-y)*np.log(1-p)
-
-	def gradient(self,y,p):
-		# Не делим на 0(Избавляемся от крайних точек отрекза [0,1])
-		p = np.clip(p,1e-15,1-1e-15)
-		p,y = p.reshape(-1,1),y.reshape(-1,1)
-
-		return -(y/p) + (1-y) / (1-p)
-
-class MSE():
-	''' Класс среднеквадратичной ошибки. '''
-	def __init__(self):
-		pass
-
-	def mist(self,y,y_pred):
-		return 0.5 * (y-y_pred)**2
-
-	def gradient(self,y,y_pred):
-		return -(y-y_pred)
-
-
-class GradientBoosting():
-	''' Супер-класс градиентного бустинг (на деревьях)'''
-	def __init__(self,n_estimators,learning_rate,
-				min_samples_split,min_impurity,max_depth,regression):
-		self.n_estimators = n_estimators
-		self.learning_rate = learning_rate
-		self.min_samples_split = min_samples_split
-		self.min_impurity = min_impurity
-		self.max_depth = max_depth
-		self.regression = regression
-		self.trees = []
-		self.loss = MSE()
-		# Иинициализируем деревья для классификации
-		if not self.regression:
-			self.loss = CrossEntropy()
-			'''
-			for _ in range(self.n_estimators):
-				tree = sklearn.tree.DecisionTreeClassifier(
-								min_samples_split=self.min_samples_split,
-								min_impurity_split=self.min_impurity,
-								max_depth=self.max_depth)
-				self.trees.append(tree)
-			'''
-		# Инициализируем деревья для регрессии
-		for _ in range(self.n_estimators):
-			tree = sklearn.tree.DecisionTreeRegressor(
-								min_samples_split=self.min_samples_split,
-								min_impurity_split=self.min_impurity,
-								max_depth=self.max_depth)
-			self.trees.append(tree)
-
-	def fit(self,X,y):
-		X,y = check_data_format(X),check_data_format(y)
-		# Изначально берется среднее значение
-		y_pred = np.full(np.shape(y),np.mean(y,axis=0)) 
-		for tree in self.trees:
-			# Градиент выбранной функции издержек
-			# Базовая функция издержек - 1/2 MSE
-			gradient = self.loss.gradient(y,y_pred)
-			tree.fit(X,gradient)
-			update = tree.predict(X)
-			# Learning_rate введен, чтобы неменого регуляризовать модель
-			y_pred -= self.learning_rate*update
-
-	def predict(self,X):
-		X = check_data_format(X)
-		# Способ формирования предиктов у градиентного бустинга
-		y_pred = np.array([])
-		for tree in self.trees:
-			update = tree.predict(X)
-			update = (self.learning_rate*update)
-			y_pred = -update if not y_pred.any() else y_pred - update
-		# Случай для классификации
-		if not self.regression:
-			y_pred = np.exp(y_pred)/(1+np.exp(y_pred))
-			# Округляем вероятности(threshold = 0.5)
-			y_pred = np.round(y_pred)
-
-		return y_pred
+        return y_pred
 
 
 
 class GradientBoostingClassifier(GradientBoosting):
-	''' Градиентный бустинг для классификации
-	Просто используется другая функция издержки и другой способ предикта
-	'''
-	def __init__(self,n_estimators=200,learning_rate=0.5,min_samples_split=2,
-										min_impurity=1e-7,max_depth=4):
-		super(GradientBoostingClassifier,self).__init__(
-									n_estimators=n_estimators,
-									learning_rate=learning_rate,
-									min_samples_split=min_samples_split,
-									min_impurity=min_impurity,
-									max_depth=max_depth,
-									regression=False
-									)
+    ''' Gradient boosting for classification
+    Just using different loss function and different way of predicting
+    '''
+    def __init__(self,n_estimators=200,learning_rate=0.5,min_samples_split=2,
+                                min_impurity=1e-7,max_depth=4):
+        super(GradientBoostingClassifier,self).__init__(
+                                n_estimators=n_estimators,
+                                learning_rate=learning_rate,
+                                min_samples_split=min_samples_split,
+                                min_impurity=min_impurity,
+                                max_depth=max_depth,
+                                regression=False
+                                )
 
 
 
 class GradientBoostingRegressor(GradientBoosting):
-	''' Регрессия, используя градиентный бустинг. '''
-	def __init__(self,n_estimators=200,learning_rate=0.5,min_samples_split=2,
-												min_impurity=1e-7,max_depth=4):
-		# Наследует от супер-класса
-		super(GradientBoostingRegressor,self).__init__(
-						n_estimators=n_estimators,
-						learning_rate=learning_rate,
-						min_samples_split=min_samples_split,
-						min_impurity=min_impurity,
-						max_depth=max_depth,
-						regression=True)
+    ''' Regression on GB '''
+    def __init__(self,n_estimators=200,learning_rate=0.5,min_samples_split=2,
+                                        min_impurity=1e-7,max_depth=4):
+        # Enherance
+        super(GradientBoostingRegressor,self).__init__(
+                    n_estimators=n_estimators,
+                    learning_rate=learning_rate,
+                    min_samples_split=min_samples_split,
+                    min_impurity=min_impurity,
+                    max_depth=max_depth,
+                    regression=True)
 
 
 
-class GridSearchCV():
-	''' '''
-	def __init__(self,model,param):
-		'''
-		self.model = model
-		self.param = param
-		self.best_estimator_ = 0
-		self.best_params = {}
+class GridSearchCV(object):
+    ''' '''
+    def __init__(self,model,param):
+        '''
+        self.best_estimator_ = 0
+        self.best_param = {}
 
-	def fit(self,X,y):
-		for key in self.param.keys():
-			for value in self.param[key]:
-				self.model.fit(key=value)
-				prediction = self.model.predict(X)
-				metrics = accuracy_score(y,prediction)
-				if metrics > minimal:
-					minimal = metrics
-					self.best_params[key] = value
-		self.best_estimator = self.model(self.be=self.best_params.values()[0])
-		'''
-		raise NotImplementedError
+    def fit(self,X,y):
+        for key in self.param.keys():
+            for value in self.param[key]:
+                self.model.fit(key=value)
+                prediction = self.model.predict(X)
+                metrics = accuracy_score(y,prediction)
+                if metric > minimal:
+                    minimal = metrics
+                    self.best_params[key] = value
+        self.best_estimator_ = self.model(self.be=self.best+params.values()[0])
+        '''
+        raise NotImplementedError
 
 
 
@@ -883,11 +860,57 @@ class KNeighborsClassifier(object):
 
 
 class NaiveBayesClassifier():
-    ''' '''
-    def __init__(self):
-        raise NotImplementedError
-	    
+    ''' Naive Bayes Classifier
+    Info: https://en.wikipedia.org/wiki/Naive_Bayes_classifier
+    '''
+    def fit(self,X,y):
+        self.X = X
+        self.y = y
+        self.existing_classes = np.unique(y)
+        self.parameters = []
+        for i,c in enumerate(self.existing_classes):
+            X_c = X[np.where(y == c)]
+            self.parameters.append([])
+            #
+            for col in X_c.T:
+                parameters = {"mean":col.mean(),"var":col.var()}
+                self.parameters[i].append(parameters)
 
+    def _calculate_likelihood(self,mean,var,x):
+        ''' Took this from another library on github '''
+        eps = 1e-4
+        coeff = 1.0 / math.sqrt(2.0 * math.pi * var + eps)
+        exponent = math.exp(-(math.pow(x - mean,2) / (2 * var + eps)))
+        return coeff * exponent
+
+    def _calculate_prior(self,c):
+        ''' Calculate apriori probability of class c '''
+        prob = np.mean(self.y == c)
+        return prob
+
+    def _classify(self,sample):
+        ''' Classifies using bayes theory 
+        Info: https://en.wikipedia.org/wiki/Bayes%27_theorem
+        '''
+        posteriors = list()
+        # Through list of classes:
+        for i,c in enumerate(self.existing_classes):
+            # We initialize this posterior probability as apriori
+            posterior = self._calculate_prior(c)
+            for feature_value,params in zip(sample,self.parameters[i]):
+                likelihood = self._calculate_likelihood(params['mean'],
+                                                params['var'],feature_value)
+                posterior *= likelihood
+            posteriors.append(posterior)
+        # Return the class with with the largest probability value(posterior)
+        return self.existing_classes[np.argmax(posteriors)]
+
+    def predict(self,X):
+        ''' Predict the class of X '''
+        y_pred = [self._classify(x) for x in X]
+        return y_pred
+
+            
 
 class MultiLayerPerceptron(object):
     ''' Creates a simple neural net with 1 hidden layers 
