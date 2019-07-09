@@ -52,4 +52,12 @@ Created strictly for **educational purposes**. In my study, I use the Internet a
 3. [kernelz.py](https://github.com/mishazakharov/ML-library/blob/master/ML/kernelz.py) - kernels for SVM. 
   
 
+
 <h2>Download</h2>
+
+'''
+git clone https://github.com/mishazakharov/ML-library
+cd ML-library
+'''
+
+<h2>Contact</h2>
