@@ -19,7 +19,7 @@ Created strictly for **educational purposes**. In my study, I use the Internet a
 
 *I repeat that I use this idea exclusively to learn, I do not follow commercial goals!*
 
-<h3>Table of Contents</h3>
+<h2>Table of Contents</h2>
 
 1. main.py
   * Linear regression.
