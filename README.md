@@ -22,4 +22,4 @@ Created strictly for **educational purposes**. In my study, I use the Internet a
 <h3>Table of Contents</h3>
 
 1.main.py
-..* Linear regression.
+ * Linear regression.
