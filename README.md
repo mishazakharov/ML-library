@@ -63,4 +63,4 @@ cd ML-library
 <h2>Contact</h2>
 
 If you want to work on this together or just feeling social, feel free to contact me [here](https://vk.com/rtyyu).
-And I am also available at [this email address](misha_zakharov96@mail.ru)
+And I am also available at this(misha_zakharov96@mail.ru) and this(vorahkazmisha@gmail.com) email addresses!
