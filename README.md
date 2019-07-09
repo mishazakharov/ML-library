@@ -21,5 +21,33 @@ Created strictly for **educational purposes**. In my study, I use the Internet a
 
 <h3>Table of Contents</h3>
 
-1.main.py
- * Linear regression.
+1. main.py
+  * Linear regression.
+  * Logistic regression.
+  * Support Vector Machine.
+  * Decision tree.
+  * Random forest.
+  * Voting classfier.
+  * Bagging classifer.
+  * Ada Boost classifier.
+  * Gradient Boosting classifier.
+  * Stacking regressor.
+  * Gradient Boosting regressor.
+  * K-neighbors classifier.
+  * Naive Bayes classifier.
+  * Perceptron.
+  * Multi-layer perceptron.
+ 
+2. metrics.py
+  * Mean Squared Error.
+  * Mean Absolute Error.
+  * Medain Absolute Error.
+  * Mean Squared Log Error.
+  * Accuracy Score.
+  * Precision Score.
+  * Recall Score.
+  * F1 Score.
+  * Confusion Matrix.
+  
+3. kernelz.py - kernels for SVM. 
+  
