@@ -18,3 +18,8 @@ Created strictly for **educational purposes**. In my study, I use the Internet a
 **P.S.** I am a newcomer. **Any help and advice is APPRECIATED!** 
 
 *I repeat that I use this idea exclusively to learn, I do not follow commercial goals!*
+
+<h3>Table of Contents</h3>
+
+1.main.py
+..* Linear regression.
