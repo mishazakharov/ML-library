@@ -53,7 +53,7 @@ Created strictly for **educational purposes**. In my study, I use the Internet a
   
 
 
-<h2>Download</h2>
+<h2>"Installation"</h2>
 
 ```
 git clone https://github.com/mishazakharov/ML-library
