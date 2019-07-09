@@ -21,7 +21,7 @@ Created strictly for **educational purposes**. In my study, I use the Internet a
 
 <h2>Table of Contents</h2>
 
-1. main.py
+1. [main.py](https://github.com/mishazakharov/ML-library/blob/master/ML/main.py)
   * Linear regression.
   * Logistic regression.
   * Support Vector Machine.
@@ -38,7 +38,7 @@ Created strictly for **educational purposes**. In my study, I use the Internet a
   * Perceptron.
   * Multi-layer perceptron.
  
-2. metrics.py
+2. [metrics.py](https://github.com/mishazakharov/ML-library/blob/master/ML/metrics.py)
   * Mean Squared Error.
   * Mean Absolute Error.
   * Medain Absolute Error.
@@ -49,5 +49,5 @@ Created strictly for **educational purposes**. In my study, I use the Internet a
   * F1 Score.
   * Confusion Matrix.
   
-3. kernelz.py - kernels for SVM. 
+3. [kernelz.py](https://github.com/mishazakharov/ML-library/blob/master/ML/kernelz.py) - kernels for SVM. 
   
