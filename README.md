@@ -64,3 +64,4 @@ cd ML-library
 
 If you want to work on this together or just feeling social, feel free to contact me [here](https://vk.com/rtyyu).
 And I am also available at this(misha_zakharov96@mail.ru) and this(vorahkazmisha@gmail.com) email addresses!
+**Feel free** to give me any advice.@octocat :+1:
