@@ -23,7 +23,16 @@ def check_data_format(X):
 
 
 class LinearRegression(object):
-    ''' Class of linear regression '''
+    """ Class that creates a basic non-regularized linear regression model.
+
+    Args:
+        learning_rate(int): it is a constant used gradient descent
+        number_of_iterations(int): is number of iterations in the process of 
+            teaching our model, which is just all about adjusting weights of
+            the model
+        normalize(bool): flag for normalization
+
+    """
     def __init__(self,learning_rate=0.00001,number_of_iterations=3000,
                                                 normalize=False):
         # Initialization of variables
@@ -105,7 +114,15 @@ class LinearRegression(object):
 
 
 class LogisticRegression(object):
-    ''' Logistic regression class '''
+    """ This class creates basic non-regularized logistic regression model.
+
+    Args:
+        learning_rate(int): used in gradient descent
+        number_of_iterations(int): is number of iterations in the process of 
+          teaching our model, which is just all about adjusting weights of
+          the model
+
+    """
     def __init__(self,learning_rate=0.00159,number_of_iterations=3000):
         
         self.learning_rate = learning_rate
@@ -231,7 +248,13 @@ class Decision_Node(object):
 
 
 class DecisionTree(object):
-    ''' Decision Tree class '''
+    """ This class creates simple decision tree
+
+    Args:
+        X(np.ndarray/pd.DataFrame): MxN training matrix
+        y(np.ndarray/pd.DataFrame): M training vecotr of labels/values
+        
+    """ 
     def __init__(self):
         pass
 
@@ -364,7 +387,14 @@ class DecisionTree(object):
 
 
 class RandomForest(object):
-    ''' Random forest class '''
+    """ Class creates simple random forest with basic bagging.
+
+    Args:
+        n_estimators(int): number of decision trees in the forest.
+        criterion(str): criterion used in estmation of data partition 
+        max_depth(int): maximal depth for partition
+
+    """
     def __init__(self,n_estimators=3,criterion='gini',max_depth=None):
         ''' Initializing variables! '''
         self.n_estimators = n_estimators
@@ -422,11 +452,16 @@ class Bagging(object):
 
             
 class AdaBoostClassifier(object):
-    ''' Ensemble method - boosting(AdaBoost)
-    Classifies -1 and 1 only
-    My Decision Tree doesn't have needed parameters
-    so i will use sklearn.tree.DecisionTreeClassifier
-    '''
+    """ This class realizes esmeble method called ada boost.
+
+    This one works only with 1/-1 labels and created with sklearn.tree.
+    .DecisionTree 
+
+    Args:
+        n_estimators(int): number of classifiers in ensemble
+        base_estimator(class): base type of classifier used in ensemble
+
+    """
     def __init__(self,n_estimators=50,base_estimator=''):
         self.n_estimators = n_estimators
         self.base_estimator = base_estimator
@@ -467,11 +502,14 @@ class AdaBoostClassifier(object):
 
 
 class StackingRegression(object):
-    ''' Ensebmle method - stacking!
-    Only realized creating (neshodnix) classificators
-    with different algorithms!
-    Meta-regressor - linear regression
-    '''
+    """ Class realizes ensemble method - stacking regression
+
+    Meta regressor - linear regression
+
+    Args:
+        list_of_models(list): list contains models that we want to use 
+
+    """
     def __init__(self,list_of_models):
         # List of ensemble models
         self.list_of_models = list_of_models
@@ -527,7 +565,15 @@ class StackingRegression(object):
 
 
 class VotingClassifier(object):
-    ''' Common vote classifier! '''
+    """ Class creates basic voting classifier
+
+    Basic voting classifer just creates bigger model, this one doesn't 
+    really care about any dissimilarity, just makes a bigger model
+
+    Args:
+        estimators(list): list contains base classifiers that we want to use
+
+    """ 
     def __init__(self,estimators):
         # List of models
         self.estimators = estimators
@@ -559,9 +605,16 @@ class VotingClassifier(object):
 
 
 class BaggingClassifier(object):
-    ''' Bagging classifier 
-    Getting (neshodnie) models by subsampling our input_data!
-    '''
+    """ Class creates bagging classifier by subsampling input data.
+
+    This ensemble method creates dissimlar classifier by subsampling input
+    data, using the same base_estimator on it's every model
+
+    Args:
+        base_estimator(class): base model that we want to use
+        n_estimators(int): number of base models in an ensemble
+
+    """
     def __init__(self,base_estimator='',n_estimators=10):
         self.base_estimator = base_estimator
         self.n_estimators = n_estimators
@@ -634,7 +687,18 @@ class MSE(object):
 
 
 class GradientBoosting(object):
-    ''' Super-class of gradient boosting (on trees) '''
+    """ This is a superclass for ensemble method - gradient boosting(on trees)
+
+    Args:
+        n_estimators(int): number of estimators in an ensemble
+        learning_rate(int): constant representing weight of ever base model
+        min_samples_split(int): min samples needed to make a partition
+        min_imputiry(int): minimal number of impurity needed to make a partition
+        max_depth(int): maximal depth of every base tree
+        regression(bool): change basic loss function in order to use it on both
+        regression and classification tasks
+
+    """
     def __init__(self,n_estimators,learning_rate,
             min_samples_split,min_impurity,max_depth,regression):
         self.n_estimators = n_estimators
@@ -749,7 +813,6 @@ class GridSearchCV(object):
 
 
 class KMeans():
-	''' '''
 	def __init__(self,clusters,iterations=100):
 		self.clusters = clusters
 		self.iterations = iterations
