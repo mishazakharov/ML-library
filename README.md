@@ -18,3 +18,50 @@ Created strictly for **educational purposes**. In my study, I use the Internet a
 **P.S.** I am a newcomer. **Any help and advice is APPRECIATED!** 
 
 *I repeat that I use this idea exclusively to learn, I do not follow commercial goals!*
+
+<h2>Table of Contents</h2>
+
+1. [main.py](https://github.com/mishazakharov/ML-library/blob/master/ML/main.py)
+  * Linear regression.
+  * Logistic regression.
+  * Support Vector Machine.
+  * Decision tree.
+  * Random forest.
+  * Voting classfier.
+  * Bagging classifer.
+  * Ada Boost classifier.
+  * Gradient Boosting classifier.
+  * Stacking regressor.
+  * Gradient Boosting regressor.
+  * K-neighbors classifier.
+  * Naive Bayes classifier.
+  * Perceptron.
+  * Multi-layer perceptron.
+ 
+2. [metrics.py](https://github.com/mishazakharov/ML-library/blob/master/ML/metrics.py)
+  * Mean Squared Error.
+  * Mean Absolute Error.
+  * Medain Absolute Error.
+  * Mean Squared Log Error.
+  * Accuracy Score.
+  * Precision Score.
+  * Recall Score.
+  * F1 Score.
+  * Confusion Matrix.
+  
+3. [kernelz.py](https://github.com/mishazakharov/ML-library/blob/master/ML/kernelz.py) - kernels for SVM. 
+  
+
+
+<h2>"Installation"</h2>
+
+```
+git clone https://github.com/mishazakharov/ML-library
+cd ML-library
+```
+
+<h2>Contact</h2>
+
+If you want to work on this together or just feeling social, feel free to contact me [here](https://vk.com/rtyyu).
+And I am also available at this(misha_zakharov96@mail.ru) and this(vorahkazmisha@gmail.com) email addresses!
+**Feel free** to give me any advice. :+1:
