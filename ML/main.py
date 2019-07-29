@@ -387,7 +387,12 @@ class DecisionTree(object):
 
 
 class RandomForest(object):
-    """ Class creates simple random forest with basic bagging.
+    """ Class creates simple random forest using basic bagging.
+
+    Bagging is used to get dissimilar models, only ensemble of dissimilar
+    models can perform better than a single model. You can use either bagging
+    or boosting to create random forests. RF is basically just an ensemble of 
+    decision trees.
 
     Args:
         n_estimators(int): number of decision trees in the forest.
@@ -454,6 +459,9 @@ class Bagging(object):
 class AdaBoostClassifier(object):
     """ This class realizes esmeble method called ada boost.
 
+    
+    This method consistently trains classifiers, with each successive 
+    classifier paying more attention to incorrectly related samples.
     This one works only with 1/-1 labels and created with sklearn.tree.
     .DecisionTree 
 
@@ -504,10 +512,12 @@ class AdaBoostClassifier(object):
 class StackingRegression(object):
     """ Class realizes ensemble method - stacking regression
 
-    Meta regressor - linear regression
+    Meta learner - linear regression. Meta learner is used to agrigate
+    predictions of models in previous layer.
 
     Args:
-        list_of_models(list): list contains models that we want to use 
+        list_of_models(list): list contains models that we want to use
+            in the first layer, base models.
 
     """
     def __init__(self,list_of_models):
@@ -569,6 +579,7 @@ class VotingClassifier(object):
 
     Basic voting classifer just creates bigger model, this one doesn't 
     really care about any dissimilarity, just makes a bigger model
+    This one actually does "hard" classification!
 
     Args:
         estimators(list): list contains base classifiers that we want to use
