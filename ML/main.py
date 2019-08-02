@@ -893,7 +893,16 @@ class KMeans():
 
 
 class KNeighborsClassifier(object):
-    ''' KNN Classifier SIMPLE '''
+    """ This class realizes k-neighbors classifier
+
+    This algorithm just compares new object to k objects in train data
+    by calculating euclidian distance and outputs the probability of a 
+    label on a new object
+
+    Args:
+        k(int): just a number of neighbors to look at
+
+    """
     def __init__(self,k=15):
         # k - number of neighbors to track!
         self.k = k
