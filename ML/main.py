@@ -520,13 +520,17 @@ class StackingRegression(object):
             in the first layer, base models.
 
     """
-    def __init__(self,list_of_models):
+    def __init__(self,list_of_models,meta_learner=''):
         # List of ensemble models
         self.list_of_models = list_of_models
         # List to keep track of predictions on validation dataset
         self.predictions_on_valid = []
         # List to keep track of predictions on test dataset
         self.predictions_on_test = []
+        # Meta learner
+        self.meta_learner = meta_learner
+        if self.meta_learner == '':
+            self.meta_learner = sklearn.linear_model.LinearRegression()
 
     def fit(self,X,y):
         X,y = check_data_format(X),check_data_format(y)
@@ -538,9 +542,17 @@ class StackingRegression(object):
             self.predictions_on_valid.append(prediction)
 
         # Making it a global variable for the whole class!
-        self.valid_y = valid_y
-        self.train_X = train_X
-        self.train_y = train_y
+        #self.valid_y = valid_y
+        #self.train_X = train_X
+        #self.train_y = train_y
+
+        # Transforming in np.array
+        new = np.zeros((self.predictions_on_valid[0].shape[0],1))
+        for prediction in self.predictions_on_valid:
+            new = np.c_[new,prediction]
+        # Deleting zero column
+        new_X = np.delete(new,0,1)
+        self.meta_learner.fit(new_X,valid_y.reshape(-1,1))
 
     def predict(self,X):
         ''' If we use sklearn.linear_model.LinearRegression
@@ -549,7 +561,7 @@ class StackingRegression(object):
         X = check_data_format(X)
         # Predictions on test dataset
         for model in self.list_of_models:
-            model.fit(self.train_X,self.train_y)
+            #model.fit(self.train_X,self.train_y)
             prediction_on_test = model.predict(X)
             self.predictions_on_test.append(prediction_on_test)
 
@@ -559,16 +571,7 @@ class StackingRegression(object):
             new_test = np.c_[new_test,prediction]
         # Deleting 0 column
         X_test = np.delete(new_test,0,1)
-        # Meta-regressor is always linear regression(now)
-        stacking_model = sklearn.linear_model.LinearRegression()
-        new = np.zeros((self.predictions_on_valid[0].shape[0],1))
-        # Transforming in np.array
-        for prediction in self.predictions_on_valid:
-            new = np.c_[new,prediction]
-        # Deleting zero column
-        new_X = np.delete(new,0,1)
-        stacking_model.fit(new_X,self.valid_y.reshape(-1,1))
-        predict_on_test = stacking_model.predict(X_test)
+        predict_on_test = self.meta_learner.predict(X_test)
 
         return prediction_on_test
 
