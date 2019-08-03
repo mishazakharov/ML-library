@@ -459,7 +459,6 @@ class Bagging(object):
 class AdaBoostClassifier(object):
     """ This class realizes esmeble method called ada boost.
 
-    
     This method consistently trains classifiers, with each successive 
     classifier paying more attention to incorrectly related samples.
     This one works only with 1/-1 labels and created with sklearn.tree.
@@ -470,12 +469,22 @@ class AdaBoostClassifier(object):
         base_estimator(class): base type of classifier used in ensemble
 
     """
-    def __init__(self,n_estimators=50,base_estimator=''):
+    def __init__(self,n_estimators=30,lr=0.5,base_estimator=''):
         self.n_estimators = n_estimators
         self.base_estimator = base_estimator
+        self.lr = lr
+
+    def prepare_data(self,y):
+        """ This method is used to prepare data i.e. turn 0 to -1
+        """
+        y = np.where(y == 0,-1,1)
+
+        return y
 
     def fit(self,X,Y):
         X,Y = check_data_format(X),check_data_format(Y)
+        # Turning all 0s into -1s
+        Y = self.prepare_data(Y)
         # List for classifiers
         self.models = []
         # Alpha - weight of every classifier
@@ -489,10 +498,15 @@ class AdaBoostClassifier(object):
                 tree = DecisionTreeClassifier(max_depth=1)
                 tree.fit(X,Y,sample_weight=W)
                 P = tree.predict(X)
+            # Error is a sum of missclassified samples               
             err = W.dot(P != Y)
-            alpha = 0.5 * (np.log(1-err) - np.log(err))
+            incorrect = (P != Y)
+            alpha = self.lr * (math.log(1 - err) - math.log(err + 1e-10)) 
             # Vectorized form
-            W = W * np.exp(-alpha*Y*P)
+            #W = W * np.exp(-alpha*Y*P)
+            # I am not sure if I am updating the weights right!
+            # But the running version is much better than commented one!!!!
+            W *= np.exp(alpha * Y * ((W > 0) | (alpha < 0)))
             # Normalizing
             W = W / W.sum()
             self.models.append(tree)
