@@ -469,7 +469,7 @@ class AdaBoostClassifier(object):
         base_estimator(class): base type of classifier used in ensemble
 
     """
-    def __init__(self,n_estimators=30,lr=0.5,base_estimator=''):
+    def __init__(self,n_estimators=11,lr=0.5,base_estimator=''):
         self.n_estimators = n_estimators
         self.base_estimator = base_estimator
         self.lr = lr
@@ -500,7 +500,6 @@ class AdaBoostClassifier(object):
                 P = tree.predict(X)
             # Error is a sum of missclassified samples               
             err = W.dot(P != Y)
-            incorrect = (P != Y)
             alpha = self.lr * (math.log(1 - err) - math.log(err + 1e-10)) 
             # Vectorized form
             #W = W * np.exp(-alpha*Y*P)
@@ -519,7 +518,11 @@ class AdaBoostClassifier(object):
         FX = np.zeros(N)
         for alpha,tree in zip(self.alphas,self.models):
             FX += alpha * tree.predict(X)
-        return np.sign(FX)
+        # The way to get prediction is pretty ridiculous
+        average = np.average(FX)
+        FX = np.where(FX < average,0,1)
+
+        return FX
 
 
 
