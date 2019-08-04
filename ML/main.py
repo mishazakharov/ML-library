@@ -1016,9 +1016,19 @@ class NaiveBayesClassifier():
             
 
 class MultiLayerPerceptron(object):
-    ''' Creates a simple neural net with 1 hidden layers 
-    Not working properly returns only 1s
-    '''
+    """ This class realizes multi layer perceptron.
+
+    Basically, it is just a deep neural network with one input layer,
+    one hidden layer, and one output layer. You can adjust number of neurons
+    in a hiden layer. This realisation doesn't work properly. Have to change it
+    later
+
+    Args:
+        x(np.ndarray,pd.DataFrame): training data
+        y(np.ndarray,pd.DataFrame): training labels/values
+        neurons_in_layer(int): number of neurons in a hidden layer
+
+    """
     def __init__(self,x,y,neurons_in_layer=4):
         self.input = x
         self.y = y
@@ -1074,9 +1084,19 @@ class MultiLayerPerceptron(object):
 
 
 class Perceptron(object):
-    ''' A single perceptron(neuron!) 
-    Not working properly returns all 1s
-    '''
+    """ This class realizes just a single perceptron.
+
+    Perceptron just passes weighted sum of its inputs through a 
+    activation function. We use back propagation algorithm to "teach"
+    neural network, i.e. adjust its weights
+
+    Args:
+        X_train(np.ndarray/pd.DataFrame): training data
+        y_train(np.ndarray/pd.DataFrame): training labels/values
+        learning_rate(float): constant used in gradient descent optimization
+        number_of_iterations(int): number of iterations of adjusting weights
+
+    """
     def __init__(self,X_train,y_train,learning_rate=0.01,
                                 number_of_iterations=1000):
         np.random.seed(1)
@@ -1114,25 +1134,25 @@ class Perceptron(object):
 
 
 class SVC(object):
-    ''' Support Vector Machine Classifier
+    """ This class realizes suppert vector classifier.
 
     General info: https://en.wikipedia.org/wiki/Support-vector_machine
-    C - Penalty
-    kernel - function linear,polynomial,rbf
-    power - the degree of polynomial kernel (<x1,x2> + coef)**power
-    gamma - from rbf kernel
-    coef - bias term in polynomial kernel
-    
     Kernel of SVC was coded by cvxopt(ConvexOptimization) library
     That's why i didnt want to realize it from scratch.
     Essential parts of this algorithm were realized by this library automatically
     Basically this realization is pointless!
-
     Learned realization and used code from this page:
     https://github.com/eriklindernoren/ML-From-Scratch/blob/master/mlfromscratch
     /supervised_learning/support_vector_machine.py
-    '''
 
+    Args:
+        C(int): penalty
+        kernel(): kernel used in svc
+        power(int): the degree of polynomial kernels (<x1,x2> + coef)**power
+        gamma(): from rbf kernel
+        coef(int): bias term in polynomial kernel
+
+    """
     def __init__(self,C=1,kernel=rbf_kernel,power=4,gamma=None,coef=4):
         self.C = C
         self.kernel = kernel
@@ -1213,5 +1233,3 @@ class SVC(object):
             prediction += self.intercept
             y_pred.append(np.sign(prediction))
         return np.array(y_pred)
-
-
