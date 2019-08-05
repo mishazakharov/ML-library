@@ -1098,7 +1098,7 @@ class Perceptron(object):
 
     """
     def __init__(self,X_train,y_train,learning_rate=0.01,
-                                number_of_iterations=1000):
+                                number_of_iterations=100):
         np.random.seed(1)
         self.X_train = X_train
         self.y_train = y_train
@@ -1109,11 +1109,13 @@ class Perceptron(object):
 
     def _sigmoid(self,x):
         ''' sigmoid function of x '''
+
         return 1/(1 + np.exp(-x))
 
     def _sigmoid_derivative(self,x):
         ''' derivative of sigmoid in x '''
-        return x * (1-x)
+
+        return self._sigmoid(x) * (1 - self._sigmoid(x))
 
     def predict(self,X_test):
         ''' predicting on X_test '''
@@ -1121,15 +1123,18 @@ class Perceptron(object):
 
     def fit(self):
         ''' training one neuron '''
+        #bla bla
+        self.y_train = self.y_train.reshape(self.X_train.shape[0],1)
         for iteration in range(self.number_of_iterations):
             # Making a prediction on X_train
             output = self.predict(self.X_train)
             # Computing an error(the difference between output and labels)
             error = self.y_train - output
             # The adjustment
-            adjustment = np.dot(self.X_train.T,(error*self._sigmoid_derivative(output)))
+            adjustment = np.dot((error * self._sigmoid_derivative(output)).T,
+                            self.X_train)
             # Adjusting
-            self.synaptic_weights += self.learning_rate * adjustment
+            self.synaptic_weights += self.learning_rate * adjustment.T
 
 
 
