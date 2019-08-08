@@ -1029,10 +1029,11 @@ class MultiLayerPerceptron(object):
         neurons_in_layer(int): number of neurons in a hidden layer
 
     """
-    def __init__(self,x,y,neurons_in_layer=4):
+    def __init__(self,x,y,neurons_in_layer=2,lr=0.01):
         self.input = x
-        self.y = y
+        self.y = y.reshape(self.input.shape[0],1)
         self.neurons_in_layer = neurons_in_layer
+        self.lr = lr
         # Weights of 1st layer
         self.weights1 = np.random.rand(self.input.shape[1],
                                             self.neurons_in_layer)
@@ -1040,36 +1041,46 @@ class MultiLayerPerceptron(object):
         self.weights2 = np.random.rand(self.neurons_in_layer,1)
         self.output = np.zeros(y.shape)
 
-    def sigmoid(self,x):
+    def _sigmoid(self,x):
+        """ Calcuslates sigmoid function.
+        """
+
         return 1/(1 + np.exp(-x))
 
-    def sigmoid_derivative(self,x):
-        return x * (1.0 - x)
+    def _sigmoid_derivative(self,x):
+        """ Calculates a sigmoid derivative.
+        """
+
+        return self._sigmoid(x) * (1 - self._sigmoid(x))
 
     def feedforward(self):
         ''' Feedforward propogation '''
         # First layer
-        self.layer1 = self.sigmoid(np.dot(self.input,self.weights1))
+        self.layer1 = self._sigmoid(np.dot(self.input,self.weights1))
         # Second layer
-        self.output = self.sigmoid(np.dot(self.layer1,self.weights2))
+        self.output = self._sigmoid(np.dot(self.layer1,self.weights2))
 
     def backpropogation(self):
         ''' Backpropogation in NN '''
 
         # Updating weights2 
         error = self.y - self.output
+        # Why would I need this!  
         learning_rate = 2
-        d_weights2 = np.dot(self.layer1.T,(learning_rate*
-                            error*self.sigmoid_derivative(self.output)))
+        # Updating weights first time
+        d_weights2 = np.dot((error * self._sigmoid_derivative(self.output)).T,
+                            self.layer1)
         # Updating weights1 
-        error1 = np.dot(error,self.weights2.T)
-        d_weights1 = np.dot(self.input.T,(learning_rate*
-                                error1*self.sigmoid_derivative(self.layer1)))
+        # Caclulating derivatives with respect of input on 2nd layer(hidden units)
+        error2 = np.dot((error * self._sigmoid_derivative(self.output)),
+                            self.weights2.T)
+        # Calculating derivative of L with respect of first layer's weights
+        d_weights1 = np.dot(error2.T,self.input)
         # Updating weights
-        self.weights1 -= d_weights1
-        self.weights2 -= d_weights2
+        self.weights1 -= self.lr * d_weights1.T
+        self.weights2 -= self.lr * d_weights2.T
 
-    def fit(self,number_of_iterations):
+    def fit(self,number_of_iterations=10):
         ''' Training our NN '''
         for i in range(number_of_iterations+1):
             self.feedforward()
@@ -1077,8 +1088,9 @@ class MultiLayerPerceptron(object):
         
     def predict(self,new_input):
         ''' Predicting new values '''
-        l1 = self.sigmoid(np.dot(new_input,self.weights1))
-        output = self.sigmoid(np.dot(l1,self.weights2))
+        l1 = self._sigmoid(np.dot(new_input,self.weights1))
+        output = self._sigmoid(np.dot(l1,self.weights2))
+
         return np.round(output)
 
 

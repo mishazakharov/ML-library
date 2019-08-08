@@ -19,9 +19,10 @@ with warnings.catch_warnings():
     X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.20)
     list_of_models = [main.LogisticRegression(),main.LinearRegression()]
     # Building our model!
-    model = main.Perceptron(X_train,y_train)
-    a = model.fit()
+    model = main.MultiLayerPerceptron(X_train,y_train)
+    a = model.fit(100)
     prediction = model.predict(X_test)
+    print(prediction)
     #metricss = confusion_matrix(y_test,prediction)
     #print(metricss)
     try:
